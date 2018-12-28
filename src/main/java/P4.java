@@ -1,3 +1,4 @@
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
@@ -11,10 +12,10 @@ class P4 {
     static Graph prepareTestGraph() {
         Graph graph = new SingleGraph("P4Test");
 
-        setNodeTypeAndLabel(graph.addNode("1"), NodeType.NODE, NodeLabel.I);
-        setNodeTypeAndLabel(graph.addNode("2"), NodeType.NODE, NodeLabel.I);
-        setNodeTypeAndLabel(graph.addNode("3"), NodeType.NODE, NodeLabel.I);
-        setNodeTypeAndLabel(graph.addNode("4"), NodeType.NODE, NodeLabel.I);
+        setNodeTypeAndLabel(graph.addNode("1"), NodeType.HYPERREDGE, NodeLabel.I);
+        setNodeTypeAndLabel(graph.addNode("2"), NodeType.HYPERREDGE, NodeLabel.I);
+        setNodeTypeAndLabel(graph.addNode("3"), NodeType.HYPERREDGE, NodeLabel.I);
+        setNodeTypeAndLabel(graph.addNode("4"), NodeType.HYPERREDGE, NodeLabel.I);
 
         setNodeTypeAndLabel(graph.addNode("5"), NodeType.NODE, null);
         setNodeTypeAndLabel(graph.addNode("6"), NodeType.NODE, null);
@@ -41,9 +42,43 @@ class P4 {
         graph.addEdge("5-11", "5", "11");
         graph.addEdge("7-11", "7", "11");
 
+        // graph.display();
 
-        graph.display();
+        return graph;
+    }
 
+    static Graph executeProduction(Graph graph) {
+        for (Node node : graph) {
+            NodeLabel label = node.getAttribute("label");
+
+            if (label == NodeLabel.F1 && node.getAttribute("P4") == null) {
+                for (Edge edge : node.getEachEdge()) {
+                    if (edge != null) {
+                        graph.removeEdge(edge);
+                    }
+                }
+                Node newF1 = graph.addNode("12");
+                setNodeTypeAndLabel(newF1, NodeType.HYPERREDGE, NodeLabel.F1);
+
+                // Adding another F1 results will include it to iteration, there is a need to distinguish them...
+                newF1.setAttribute("P4", true);
+
+                setNodeTypeAndLabel(graph.addNode("v"), NodeType.NODE, null);
+
+                graph.addEdge("5-11", "5", "11");
+                graph.addEdge("11-v", "11", "v");
+                graph.addEdge("v-12", "v", "12");
+                graph.addEdge("12-7", "12", "7");
+
+                graph.addEdge("v-9", "v", "9");
+                graph.addEdge("v-10", "v", "10");
+
+                graph.addEdge("v-1", "v", "1");
+                graph.addEdge("v-2", "v", "2");
+                graph.addEdge("v-3", "v", "3");
+                graph.addEdge("v-4", "v", "4");
+            }
+        }
         return graph;
     }
 }
