@@ -17,6 +17,7 @@ import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class P1Test {
@@ -46,7 +47,20 @@ public class P1Test {
         assertEquals(4, graph.getNodeSet().stream().filter(n -> n.getAttribute("type").equals(Type.VERTEX)).count());
         assertFalse(graph.getNode("5").getAttribute("break"));
 
-        //todo: check connections
+        //check connections
+        assertTrue(graph.getNode("1").hasEdgeToward("2"));
+        assertTrue(graph.getNode("2").hasEdgeToward("4"));
+        assertTrue(graph.getNode("4").hasEdgeToward("3"));
+        assertTrue(graph.getNode("3").hasEdgeToward("1"));
+        assertTrue(graph.getNode("1").hasEdgeToward("5"));
+        assertTrue(graph.getNode("2").hasEdgeToward("5"));
+        assertTrue(graph.getNode("4").hasEdgeToward("5"));
+        assertTrue(graph.getNode("3").hasEdgeToward("5"));
+
+        assertFalse(graph.getNode("1").hasEdgeToward("4"));
+        assertFalse(graph.getNode("2").hasEdgeToward("3"));
+        assertFalse(graph.getNode("3").hasEdgeToward("2"));
+        assertFalse(graph.getNode("4").hasEdgeToward("1"));
 
         //RGB
         int width  = img.getWidth();
