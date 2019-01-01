@@ -1,6 +1,8 @@
 import common.Geom;
 import common.Label;
 import common.Type;
+import org.graphstream.stream.ProxyPipe;
+import org.graphstream.ui.swingViewer.Viewer;
 import org.junit.Test;
 import org.graphstream.graph.*;
 import org.junit.runner.RunWith;
@@ -14,7 +16,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Scanner;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -33,8 +37,17 @@ public class P1Test {
 
         Graph graph = p1.run(img);
 
-        //todo: fix visualization, add all attributes
-        graph.display();
+        //not sure if unit test is the best place for this...
+        Viewer viewer = graph.display();
+
+        //todo: replace with something less ugly...
+        //(how to check if window is still open?)
+
+        try {
+            sleep(10*1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         //structure
         assertEquals(5, graph.getNodeCount());

@@ -51,7 +51,6 @@ public class P1 {
         node.setAttribute("break", isBreak);
     }
 
-
     private void addNode(Graph graph, String name, Geom geom, Type type, Label label, boolean isBreak, Color rgb) {
         Node node = graph.addNode(name);
         node.setAttribute("geom", geom);
@@ -59,11 +58,14 @@ public class P1 {
         node.setAttribute("label", label);
         node.setAttribute("break", isBreak);
         node.setAttribute("rgb", rgb);
+        String uiName = "geom = (" + geom.getX() + "," + geom.getY() + ")" + " : " + rgb.toString() + " : " + name;
+        node.addAttribute("ui.label", uiName);
     }
 
     private void addEdge(Graph graph, String sourceName, String targetName) {
         String name = sourceName + "-" + targetName;
         Edge edge = graph.addEdge(name, sourceName, targetName);
+        edge.addAttribute("ui.label", name);
     }
     private void addBorderEdge(Graph graph, String sourceName, String targetName) {
         String name = sourceName + "-" + targetName;
