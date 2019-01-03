@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Iterator;
 
 @Service
 public class P4 {
@@ -89,6 +90,30 @@ public class P4 {
             return false;
         }
 
+        Iterator<Node> nodeFNiterator = nodeFN.getNeighborNodeIterator();
+        while (nodeFNiterator.hasNext()) {
+            Node currentNode = nodeFNiterator.next();
+            if (currentNode.getAttribute("label") != Label.T) {
+                return false;
+            }
+        }
+
+        Iterator<Node> nodeFWiterator = nodeFW.getNeighborNodeIterator();
+        while (nodeFWiterator.hasNext()) {
+            Node currentNode = nodeFWiterator.next();
+            if (currentNode.getAttribute("label") != Label.T) {
+                return false;
+            }
+        }
+
+        Iterator<Node> nodeFEiterator = nodeFE.getNeighborNodeIterator();
+        while (nodeFEiterator.hasNext()) {
+            Node currentNode = nodeFEiterator.next();
+            if (currentNode.getAttribute("label") != Label.T) {
+                return false;
+            }
+        }
+
         AStar aStar = new AStar(graph);
         aStar.compute(nodeFN.getId(), nodeFW.getId());
         Path NWpath = aStar.getShortestPath();
@@ -108,7 +133,11 @@ public class P4 {
             return false;
         }
 
-        return true;
+        Geom nodeFNgeom = nodeFN.getAttribute("geom");
+        Geom nodeFWgeom = nodeFW.getAttribute("geom");
+        Geom nodeFEgeom = nodeFE.getAttribute("geom");
+
+        return nodeFNgeom.getY() == nodeFWgeom.getY() && nodeFWgeom.getY() == nodeFEgeom.getY();
     }
 
     public Graph run(Graph graph, BufferedImage img, Node nodeFN, Node nodeFW, Node nodeFE) {
