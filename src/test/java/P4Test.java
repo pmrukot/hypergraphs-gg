@@ -2,6 +2,7 @@ import common.Geom;
 import common.Label;
 import common.Type;
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -41,8 +42,11 @@ public class P4Test {
         assertEquals(7, graph.getNodeSet().stream().filter(n -> n.getAttribute("type").equals(Type.HYPEREDGE)).count());
         assertEquals(4, graph.getNodeSet().stream().filter(n -> n.getAttribute("type").equals(Type.VERTEX)).count());
 
-        Graph graphP4 = p4.run(graph, img);
+        Node nodeFN = p4.getNodeByLabel(graph, Label.FN);
+        Node nodeFW = p4.getNodeByLabel(graph, Label.FW);
+        Node nodeFE = p4.getNodeByLabel(graph, Label.FE);
 
+        Graph graphP4 = p4.run(graph, img, nodeFN, nodeFW, nodeFE);
 
         assertEquals(13, graphP4.getNodeCount());
         assertEquals(20, graphP4.getEdgeCount());

@@ -1,4 +1,6 @@
+import common.Label;
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -22,12 +24,20 @@ public class Hypergraph {
         BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("colors.jpg")));
         Graph graph = p1.run(img);
         graph.display();
-//         P4 testing bellow
-//         P4 p4 = context.getBean(P4.class);
-//         Graph preP4 = p4.prepareTestGraph(img);
-//         preP4.display().disableAutoLayout();
-//         Graph postP4 = p4.run(preP4, img);
-//         postP4.display().disableAutoLayout();
+
+//        // Preparing P4 test graph
+//        P4 p4 = context.getBean(P4.class);
+//        Graph preP4 = p4.prepareTestGraph(img);
+//        preP4.display().disableAutoLayout();
+//
+//        // Extracting input nodes for P4 test
+//        Node nodeFN = p4.getNodeByLabel(preP4, Label.FN);
+//        Node nodeFW = p4.getNodeByLabel(preP4, Label.FW);
+//        Node nodeFE = p4.getNodeByLabel(preP4, Label.FE);
+//
+//        // Run P4 production
+//        Graph postP4 = p4.run(preP4, img, nodeFN, nodeFW, nodeFE);
+//        postP4.display().disableAutoLayout();
     }
 
 }

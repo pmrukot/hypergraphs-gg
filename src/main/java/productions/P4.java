@@ -3,15 +3,16 @@ package productions;
 import common.Geom;
 import common.Label;
 import common.Type;
+import org.graphstream.algorithm.AStar;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
+import org.graphstream.graph.Path;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.nio.Buffer;
 
 @Service
 public class P4 {
@@ -23,7 +24,7 @@ public class P4 {
         int height = img.getHeight();
         Geom center = new Geom((width-1)/2, (height-1)/2);
 
-                // TODO: Change name to UUID?
+        // TODO: Change name to UUID?
         addNode(graph, "1", Type.HYPEREDGE, Label.I, new Geom(center.getX()-7, center.getY()+7));
         addNode(graph, "2", Type.HYPEREDGE, Label.I, new Geom(center.getX()+7, center.getY()+7));
         addNode(graph, "3", Type.HYPEREDGE, Label.I, new Geom(center.getX()-7, center.getY()-7));
@@ -77,23 +78,51 @@ public class P4 {
         }
     }
 
-    public Graph run(Graph graph, BufferedImage img) {
-
-        Node fn = getNodeByLabel(graph, Label.FN);
-        if(fn == null){
-            System.out.println("There is no node with label: "+Label.FN);
+    private boolean verifyNodes(Graph graph, Node nodeFN, Node nodeFW, Node nodeFE) {
+        if (nodeFN == null || nodeFW == null || nodeFE == null) {
+            System.out.println("One ore more of the input nodes are null");
+            return false;
         }
-        else{
-            Node lowerNode = removeLowerEdgeAndReturnLowerNode(graph, fn);
-            Node upperNode = fn.getNeighborNodeIterator().next();
 
-            String fsId = Integer.toString(Integer.parseInt(fn.getId())+1);
-            Geom fnGeom = fn.getAttribute("geom");
+        if (nodeFN.getAttribute("label") != Label.FN || nodeFW.getAttribute("label") != Label.FW || nodeFE.getAttribute("label") != Label.FE) {
+            System.out.println("One or more of the labels of input nodes are incorrect");
+            return false;
+        }
+
+        AStar aStar = new AStar(graph);
+        aStar.compute(nodeFN.getId(), nodeFW.getId());
+        Path NWpath = aStar.getShortestPath();
+        if (NWpath.getNodeCount() != 5) {
+            return false;
+        }
+
+        aStar.compute(nodeFN.getId(), nodeFE.getId());
+        Path NEpath = aStar.getShortestPath();
+        if (NEpath.getNodeCount() != 5) {
+            return false;
+        }
+
+        aStar.compute(nodeFW.getId(), nodeFE.getId());
+        Path WEpath = aStar.getShortestPath();
+        if (WEpath.getNodeCount() != 7) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public Graph run(Graph graph, BufferedImage img, Node nodeFN, Node nodeFW, Node nodeFE) {
+        if (verifyNodes(graph, nodeFN, nodeFW, nodeFE)) {
+            Node lowerNode = removeLowerEdgeAndReturnLowerNode(graph, nodeFN);
+            Node upperNode = nodeFN.getNeighborNodeIterator().next();
+
+            String fsId = Integer.toString(Integer.parseInt(nodeFN.getId())+1);
+            Geom fnGeom = nodeFN.getAttribute("geom");
             Geom nodeUnderFnGeom = lowerNode.getAttribute("geom");
             Geom nodeAboveFnGeom = upperNode.getAttribute("geom");
             Geom fnNewGeom = new Geom((fnGeom.getX()+nodeAboveFnGeom.getX())/2, (fnGeom.getY()+nodeAboveFnGeom.getY())/2);
-            fn.setAttribute("geom", fnNewGeom);
-            fn.setAttribute("xy", fnNewGeom.getX(), fnNewGeom.getY());
+            nodeFN.setAttribute("geom", fnNewGeom);
+            nodeFN.setAttribute("xy", fnNewGeom.getX(), fnNewGeom.getY());
 
             addNode(graph, fsId, Type.HYPEREDGE, Label.FS, new Geom((fnGeom.getX()+nodeUnderFnGeom.getX())/2, (fnGeom.getY()+nodeUnderFnGeom.getY())/2));
             addEdge(graph, fsId, lowerNode.getId());
@@ -110,9 +139,8 @@ public class P4 {
                 addEdge(graph, vNode.getId(), node.getId());
             });
 
-            addEdge(graph, vNode.getId(), getNodeByLabel(graph, Label.FW).getId());
-            addEdge(graph, vNode.getId(), getNodeByLabel(graph, Label.FE).getId());
-
+            addEdge(graph, vNode.getId(), nodeFW.getId());
+            addEdge(graph, vNode.getId(), nodeFE.getId());
         }
         return graph;
     }
