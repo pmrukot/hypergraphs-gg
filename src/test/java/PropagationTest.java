@@ -1,7 +1,6 @@
 import common.Label;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropagationTest {
@@ -33,7 +31,7 @@ public class PropagationTest {
     private P6 p6;
 
     @Test
-    public void propagationTest() throws IOException {
+    public void propagationTest() throws IOException, InterruptedException {
         ClassLoader classLoader = getClass().getClassLoader();
         File f = new File(Objects.requireNonNull(classLoader.getResource("colors.jpg")).getFile());
         BufferedImage img = ImageIO.read(f);
@@ -49,10 +47,37 @@ public class PropagationTest {
         // run p3
         // run p3
         // run p3
-        
 
         List<Node> nodes = graph.getNodeSet().stream().filter(n -> n.getAttribute("label").equals(Label.I)).collect(Collectors.toList());
+        List<Node> nodesV = graph.getNodeSet().stream().filter(n -> n.getAttribute("label").equals(Label.V)).collect(Collectors.toList());
 
+
+        graph = p5.run(graph, img, nodes.get(1));
+        graph = p5.run(graph, img, nodes.get(2));
+        graph = p5.run(graph, img, nodes.get(3));
+        graph = p2.run(graph, img, nodes.get(1));
+        graph = p2.run(graph, img, nodes.get(2));
+        graph = p2.run(graph, img, nodes.get(3));
+        // run p3
+        // run p3
+        // run p3
+        // run p3
+        // run p3
+        // run p3
+
+        Node nodeFN = p4.getNodeByLabel(graph, Label.FN);
+        Node nodeFW = p4.getNodeByLabel(graph, Label.FW);
+        Node nodeFE = p4.getNodeByLabel(graph, Label.FE);
+        graph = p4.run(graph, img, nodeFN, nodeFW, nodeFE);
+
+        nodeFN = p4.getNodeByLabel(graph, Label.FN);
+        nodeFW = p4.getNodeByLabel(graph, Label.FW);
+        nodeFE = p4.getNodeByLabel(graph, Label.FE);
+        graph = p4.run(graph, img, nodeFN, nodeFW, nodeFE);
+
+
+        graph.display();
+        Thread.sleep(10000);
 
     }
 }

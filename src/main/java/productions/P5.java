@@ -14,13 +14,12 @@ public class P5 {
 
     private final P6 p6;
 
-    @Autowired
-    public P5(@Lazy P6 p6) {
-        this.p6 = p6;
+    public P5() {
+        this.p6 = new P6(this);
     }
 
     public Graph run(Graph graph, BufferedImage img, Node node) {
-        if (verify(graph, img, node)) return graph;
+        if (!verify(graph, img, node)) return graph;
         node.setAttribute("break", true);
         return p6.run(graph, img, node);
     }
