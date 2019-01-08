@@ -36,9 +36,13 @@ public class P1Test {
         BufferedImage img = ImageIO.read(f);
 
         Graph graph = p1.run(img);
+        graph.addAttribute("ui.stylesheet", "graph { padding: 200px; fill-color: #EEE; }");
+
 
         //not sure if unit test is the best place for this...
         Viewer viewer = graph.display();
+        viewer.disableAutoLayout();
+
 
         //todo: replace with something less ugly...
         //(how to check if window is still open?)
@@ -50,21 +54,21 @@ public class P1Test {
         }
 
         //structure
-        assertEquals(5, graph.getNodeCount());
-        assertEquals(8, graph.getEdgeCount());
+        assertEquals(9, graph.getNodeCount());
+        assertEquals(12, graph.getEdgeCount());
         assertEquals(1, graph.getNodeSet().stream().filter(n -> n.getAttribute("label").equals(Label.I)).count());
+        assertEquals(4, graph.getNodeSet().stream().filter(n -> n.getAttribute("label").equals(Label.B)).count());
         assertEquals(4, graph.getNodeSet().stream().filter(n -> n.getAttribute("label").equals(Label.V)).count());
-        assertEquals(4, graph.getEdgeSet().stream().filter(n -> Label.B.equals(n.getAttribute("label"))).count());
-        assertEquals(4, graph.getEdgeSet().stream().filter(n -> n.getAttributeCount() == 0).count());
-        assertEquals(1, graph.getNodeSet().stream().filter(n -> n.getAttribute("type").equals(Type.HYPEREDGE)).count());
+        assertEquals(12, graph.getEdgeSet().stream().filter(n -> n.getAttributeCount() == 0).count());
+        assertEquals(5, graph.getNodeSet().stream().filter(n -> n.getAttribute("type").equals(Type.HYPEREDGE)).count());
         assertEquals(4, graph.getNodeSet().stream().filter(n -> n.getAttribute("type").equals(Type.VERTEX)).count());
         assertFalse(graph.getNode("5").getAttribute("break"));
 
         //check connections
-        assertTrue(graph.getNode("1").hasEdgeToward("2"));
-        assertTrue(graph.getNode("2").hasEdgeToward("4"));
-        assertTrue(graph.getNode("4").hasEdgeToward("3"));
-        assertTrue(graph.getNode("3").hasEdgeToward("1"));
+        assertTrue(graph.getNode("1").hasEdgeToward("B1-2"));
+        assertTrue(graph.getNode("2").hasEdgeToward("B2-4"));
+        assertTrue(graph.getNode("4").hasEdgeToward("B4-3"));
+        assertTrue(graph.getNode("3").hasEdgeToward("B3-1"));
         assertTrue(graph.getNode("1").hasEdgeToward("5"));
         assertTrue(graph.getNode("2").hasEdgeToward("5"));
         assertTrue(graph.getNode("4").hasEdgeToward("5"));
