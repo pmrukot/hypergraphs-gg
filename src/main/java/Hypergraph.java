@@ -1,5 +1,6 @@
 import com.sun.org.apache.xpath.internal.NodeSet;
 import common.Label;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.springframework.context.ApplicationContext;
@@ -7,6 +8,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 import productions.P1;
 import productions.P2;
+import productions.P3;
 import productions.P4;
 
 import javax.imageio.ImageIO;
@@ -34,6 +36,13 @@ public class Hypergraph {
 //        Node nodeI =  graphP2.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
 //        Graph g2 = p2.run(graphP2, img, nodeI);
 //        g2.display();
+
+//        P3 p3 = context.getBean(P3.class);
+//        Graph testGraph = p3.prepareTestGraph(img);
+//        Edge edge = testGraph.getEdge("1-2");
+//        Node f1 = testGraph.getNode("f1");
+//        Graph g3 = p3.run(testGraph, img, edge, f1);
+//        g3.display().disableAutoLayout();
 
 
 //        // Preparing P4 test graph
