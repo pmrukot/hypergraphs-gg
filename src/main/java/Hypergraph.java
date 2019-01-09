@@ -2,6 +2,7 @@ import com.sun.org.apache.xpath.internal.NodeSet;
 import common.Label;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
+import org.graphstream.ui.swingViewer.Viewer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -26,7 +27,9 @@ public class Hypergraph {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("colors.jpg")));
         Graph graph = p1.run(img);
-        graph.display();
+        graph.addAttribute("ui.stylesheet", "graph { padding: 200px; fill-color: #EEE; }");
+        Viewer viewer = graph.display();
+        viewer.disableAutoLayout();
 
         //P2
 //        P2 p2 = context.getBean(P2.class);

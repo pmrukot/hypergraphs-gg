@@ -25,12 +25,12 @@ public class P1 {
         addNode(graph, "2", topRight, Type.VERTEX, Label.V, false, getColor(img, topRight));
         addNode(graph, "3", bottomLeft, Type.VERTEX, Label.V, false, getColor(img, bottomLeft));
         addNode(graph, "4", bottomRight, Type.VERTEX, Label.V, false,getColor(img, bottomRight));
-        addNode(graph, "5", Type.HYPEREDGE, Label.I, false);
+        addNode(graph, "5", Type.HYPEREDGE, Label.I, false, width/2, height/2);
 
-        addBorderEdge(graph, "1", "2");
-        addBorderEdge(graph, "2", "4");
-        addBorderEdge(graph, "4", "3");
-        addBorderEdge(graph, "3", "1");
+        addBorderEdge(graph, "1", "2", width/2, height-1);
+        addBorderEdge(graph, "2", "4", width-1, height/2);
+        addBorderEdge(graph, "4", "3", width/2, 0);
+        addBorderEdge(graph, "3", "1", 0, height/2);
         addEdge(graph, "1", "5");
         addEdge(graph, "2", "5");
         addEdge(graph, "4", "5");
@@ -43,13 +43,14 @@ public class P1 {
         return new Color(img.getRGB(geom.getX(),geom.getY()));
     }
 
-    private void addNode(Graph graph, String name, Type type, Label label, boolean isBreak) {
+    private void addNode(Graph graph, String name, Type type, Label label, boolean isBreak, int x, int y) {
         Node node = graph.addNode(name);
         node.setAttribute("type", type);
         node.setAttribute("label", label);
         node.setAttribute("break", isBreak);
+        node.setAttribute("x", x);
+        node.setAttribute("y", y);
     }
-
 
     private void addNode(Graph graph, String name, Geom geom, Type type, Label label, boolean isBreak, Color rgb) {
         Node node = graph.addNode(name);
@@ -58,15 +59,30 @@ public class P1 {
         node.setAttribute("label", label);
         node.setAttribute("break", isBreak);
         node.setAttribute("rgb", rgb);
+        node.setAttribute("x", geom.getX());
+        node.setAttribute("y", geom.getY());
+
+        String uiName = "geom = (" + geom.getX() + "," + geom.getY() + ")" + " : " + printColor(rgb) + " : " + name;
+        node.addAttribute("ui.label", uiName);
+    }
+
+    private String printColor(Color rgb) {
+        return "rgb=(" + rgb.getRed() + "," + rgb.getGreen() + "," + rgb.getBlue() + ")";
     }
 
     private void addEdge(Graph graph, String sourceName, String targetName) {
         String name = sourceName + "-" + targetName;
-        Edge edge = graph.addEdge(name, sourceName, targetName);
+        graph.addEdge(name, sourceName, targetName);
     }
-    private void addBorderEdge(Graph graph, String sourceName, String targetName) {
-        String name = sourceName + "-" + targetName;
-        Edge edge = graph.addEdge(name, sourceName, targetName);
-        edge.addAttribute("label", Label.B);
+    private void addBorderEdge(Graph graph, String sourceName, String targetName, int x, int y) {
+        String nodeName = "B" +  sourceName + "-" + targetName;
+        Node node = graph.addNode(nodeName);
+        node.addAttribute("label", Label.B);
+        node.setAttribute("type", Type.HYPEREDGE);
+        node.setAttribute("x", x);
+        node.setAttribute("y", y);
+
+        graph.addEdge(sourceName + "-" + nodeName, sourceName, nodeName);
+        graph.addEdge(nodeName + "-" + targetName, nodeName, targetName);
     }
 }
