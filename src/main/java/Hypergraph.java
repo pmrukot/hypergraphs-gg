@@ -8,8 +8,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 import productions.P1;
 import productions.P2;
-import productions.P3;
-import productions.P4;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
