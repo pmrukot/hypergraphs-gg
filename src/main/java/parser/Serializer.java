@@ -35,7 +35,7 @@ public class Serializer {
         out.newLine();
     }
 
-    public void serializeP2(BufferedWriter out, Node nodeI) throws IOException {
+    public void serializeP2(BufferedWriter out, BufferedImage img, Node nodeI) throws IOException {
 
         Node[] sortedNodes = StreamSupport.<Node>stream(
                 Spliterators.spliteratorUnknownSize(
@@ -57,7 +57,9 @@ public class Serializer {
         int y1 = yOf(sortedNodes[0]);
         int x2 = xOf(sortedNodes[3]);
         int y2 = yOf(sortedNodes[3]);
-        Color c = nodeI.getAttribute("rgb");
+
+        Geom nodeIPos = nodeI.getAttribute("geom");
+        Color c = getColor(img, nodeIPos);
 
         out.write("2");
         printSimple(out, x1, x2, y1, y2, c);
@@ -104,6 +106,13 @@ public class Serializer {
 
         out.write("4");
         printSimple(out, x1, x2, y1, y2, color);
+    }
+
+    public void serializeP5(BufferedWriter out, BufferedImage img, Node nodeI) throws IOException {
+        Geom cords = nodeI.getAttribute("geom");
+        out.write("5");
+        out.newLine();
+        out.write(String.format("%d,%d", cords.getX(), cords.getY()));
     }
 
     private void printSimple(BufferedWriter out, int x1, int x2, int y1, int y2, Color color) throws IOException {
