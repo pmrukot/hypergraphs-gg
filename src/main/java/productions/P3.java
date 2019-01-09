@@ -21,12 +21,12 @@ public class P3 {
         Node n0;
         Node n1;
         if (border == null || !border.hasAttribute("label") || border.getAttribute("label") != Label.B ||
-                nodeF == null || !nodeF.hasAttribute("label") || nodeF.getAttribute("label") != Label.FN ||
-                nodeF.getAttribute("label") != Label.FW || nodeF.getAttribute("label") != Label.FE) {
+                nodeF == null || !nodeF.hasAttribute("label") || (nodeF.getAttribute("label") != Label.FN &&
+                nodeF.getAttribute("label") != Label.FW && nodeF.getAttribute("label") != Label.FE &&
+                nodeF.getAttribute("label") != Label.FS)) {
             return graph;
         }
         AStar aStar = new AStar(graph);
-        aStar.setCosts(new AStar.DistanceCosts());
         n0 = border.getNode0();
         n1 = border.getNode1();
         aStar.compute(n0.getId(), nodeF.getId());
