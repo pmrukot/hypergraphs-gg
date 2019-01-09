@@ -36,10 +36,12 @@ public class PropagationTest {
     Graph graph;
 
     @Test
-    public void propagationTest() throws IOException, InterruptedException {
+    public void propagationTest() throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
         File f = new File(Objects.requireNonNull(classLoader.getResource("colors.jpg")).getFile());
         BufferedImage img = ImageIO.read(f);
+
+        /***** First Step *****/
 
         graph = p1.run(img);
 
@@ -56,13 +58,17 @@ public class PropagationTest {
         Node nodeFW = p4.getNodeByLabel(graph, Label.FW);
         Node nodeFE = p4.getNodeByLabel(graph, Label.FE);
         Node nodeFS = p4.getNodeByLabel(graph, Label.FS);
-//        graph = p3.run(graph, img, nodeBN, nodeFN);
-//        graph = p3.run(graph, img, nodeBE, nodeFE);
-//        graph = p3.run(graph, img, nodeBS, nodeFS);
-//        graph = p3.run(graph, img, nodeBW, nodeFW);
+
+        // graph = p3.run(graph, img, nodeBN, nodeFN);
+        // graph = p3.run(graph, img, nodeBE, nodeFE);
+        // graph = p3.run(graph, img, nodeBS, nodeFS);
+        // graph = p3.run(graph, img, nodeBW, nodeFW);
+
+        graph.display();
+
+        /***** Second Step *****/
 
         List<Node> nodesLabeledI = graph.getNodeSet().stream().filter(n -> n.getAttribute("label").equals(Label.I)).collect(Collectors.toList());
-        Node nodeForBreakCheck = nodesLabeledI.get(3);
 
         graph = p5.run(graph, img, nodesLabeledI.get(0));
         graph = p5.run(graph, img, nodesLabeledI.get(1));
@@ -70,6 +76,7 @@ public class PropagationTest {
         graph = p2.run(graph, img, nodesLabeledI.get(0));
         graph = p2.run(graph, img, nodesLabeledI.get(1));
         graph = p2.run(graph, img, nodesLabeledI.get(2));
+
         // graph = p3.run(graph, img, connotfindB, secondLowestFN);
         // graph = p3.run(graph, img, connotfindB, findNode(Label.FN, 1);
         // graph = p3.run(graph, img, connotfindB, secondLowestFE);
@@ -84,25 +91,37 @@ public class PropagationTest {
         // graph = p3.run(graph, img, connotfindB, findNode(Label.FE, -1);
 
         // graph = p4.run(graph, img, lowestFE, highestFN, secondLowestFS);
-        //graph = p4.run(graph, img, findNode(Label.FE, 0), highestFN, secondLowestFS);
+        // graph = p4.run(graph, img, findNode(Label.FE, 0), findNode(Label.FN, -1), findNode(Label.FS, 1));
         // graph = p4.run(graph, img, lowestFS, secondHighestFE, highestFW);
+        // graph = p4.run(graph, img, findNode(Label.FS, 0), findNode(Label.FE, -2), findNode(Label.FW, -1));
 
-        nodesLabeledI = graph.getNodeSet().stream().filter(n -> n.getAttribute("label").equals(Label.I)).collect(Collectors.toList());
-        nodeI = nodesLabeledI.get(nodesLabeledI.size() - 4);
+        graph.display();
+
+        /***** Third Step *****/
+
+        nodeI = findNode(Label.I, -4);
+
         graph = p5.run(graph, img, nodeI);
         graph = p2.run(graph, img, nodeI);
-        //nodeI = lowestI;
+
+        nodeI = findNode(Label.I, 0);
+
         graph = p5.run(graph, img, nodeI);
+
         Assert.assertTrue(nodeI.getAttribute("break"));
 
         graph.display();
-        Thread.sleep(10000);
     }
 
     public Node findNode(Label label, Integer offset){
         List<Node> nodes = graph.getNodeSet().stream()
                 .filter(n -> n.getAttribute("label").equals(label))
                 .collect(Collectors.toList());
-        return nodes.get(nodes.size() + offset);
+        if(offset < 0) {
+            return nodes.get(nodes.size() + offset);
+        }
+        else {
+            return nodes.get(offset);
+        }
     }
 }
