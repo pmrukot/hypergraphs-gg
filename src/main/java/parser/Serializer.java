@@ -1,15 +1,13 @@
 package parser;
 
 import common.Geom;
-import org.graphstream.graph.Graph;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.springframework.stereotype.Service;
-import productions.P1;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Spliterator;
@@ -63,6 +61,24 @@ public class Serializer {
 
         out.write("2");
         printSimple(out, x1, x2, y1, y2, c);
+    }
+
+    public void serializeP3(BufferedWriter out, BufferedImage img, Edge border, Node nodeF) throws IOException {
+        Node n0 = border.getNode0();
+        Node n1 = border.getNode1();
+        Geom g1 = n0.getAttribute("geom");
+        Geom g2 = n1.getAttribute("geom");
+        int x1 = g1.getX();
+        int y1 = g1.getY();
+        int x2 = g2.getX();
+        Color c = getColor(img, new Geom((x1 + x2) / 2, y1));
+
+        out.write("3");
+        out.newLine();
+
+        out.write(String.format("%d,%d,%d", x1, x2, y1));
+        out.newLine();
+        out.write(colorToString(c));
     }
 
     public void serializeP4(BufferedWriter out, BufferedImage img, Node nodeFN, Node nodeFW, Node nodeFE) throws IOException {
