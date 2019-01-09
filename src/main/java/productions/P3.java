@@ -8,6 +8,7 @@ import org.graphstream.algorithm.AStar;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.SingleGraph;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -52,6 +53,32 @@ public class P3 {
         return graph;
     }
 
+    public Graph prepareTestGraph(BufferedImage img) {
+        int width = img.getWidth();
+        int height = img.getHeight();
+        Geom center = new Geom((width - 1) / 2, (height - 1));
+
+        Graph graph = new SingleGraph(getClass().getName());
+        addNode(graph, "1", new Geom(0, 0), Type.VERTEX, Label.T, false, getColor(img, new Geom(0, 0)));
+        addNode(graph, "2", new Geom(width - 1, 0), Type.VERTEX, Label.T, false, getColor(img, new Geom(width - 1, 0)));
+        addNode(graph, "3", center, Type.VERTEX, Label.T, false, getColor(img, center));
+
+        Geom v4geom = new Geom((width - 1) / 4, (height - 1) / 2);
+        Geom v5geom = new Geom(((width - 1) / 4) * 3, (height - 1) / 2);
+        addNode(graph, "4", Type.HYPEREDGE, Label.I, v4geom);
+        addNode(graph, "5", Type.HYPEREDGE, Label.I, v5geom);
+
+        addNode(graph, "f1", Type.HYPEREDGE, Label.FN, new Geom(center.getX(), center.getY() / 2));
+
+        addBorderEdge(graph, "1", "2");
+        addEdge(graph, "1", "4");
+        addEdge(graph, "4", "3");
+        addEdge(graph, "3", "5");
+        addEdge(graph, "5", "2");
+        addEdge(graph, "f1", "3");
+        return graph;
+    }
+
 
     private Color getColor(BufferedImage img, int x, int y) {
         return new Color(img.getRGB(x, y));
@@ -67,8 +94,30 @@ public class P3 {
         return node;
     }
 
+    private void addNode(Graph graph, String name, Geom geom, Type type, Label label, boolean isBreak, Color rgb) {
+        Node node = graph.addNode(name);
+        node.setAttribute("geom", geom);
+        node.setAttribute("type", type);
+        node.setAttribute("label", label);
+        node.setAttribute("break", isBreak);
+        node.setAttribute("rgb", rgb);
+    }
+
+    private void addNode(Graph graph, String name, Type type, Label label, Geom geom) {
+        Node node = graph.addNode(name);
+        node.setAttribute("type", type);
+        node.setAttribute("label", label);
+        node.setAttribute("geom", geom);
+        node.setAttribute("xy", geom.getX(), geom.getY());
+    }
+
     private void addEdge(Graph graph, Node sourceName, Node targetName) {
         String name = sourceName.getId() + "-" + targetName.getId();
+        graph.addEdge(name, sourceName, targetName);
+    }
+
+    private void addEdge(Graph graph, String sourceName, String targetName) {
+        String name = sourceName + "-" + targetName;
         graph.addEdge(name, sourceName, targetName);
     }
 
@@ -77,4 +126,15 @@ public class P3 {
         Edge edge = graph.addEdge(name, sourceName, targetName);
         edge.addAttribute("label", Label.B);
     }
+
+    private void addBorderEdge(Graph graph, String sourceName, String targetName) {
+        String name = sourceName + "-" + targetName;
+        Edge edge = graph.addEdge(name, sourceName, targetName);
+        edge.addAttribute("label", Label.B);
+    }
+
+    private Color getColor(BufferedImage img, Geom geom) {
+        return new Color(img.getRGB(geom.getX(), geom.getY()));
+    }
+
 }
