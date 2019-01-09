@@ -1,5 +1,6 @@
 package parser;
 
+import common.Geom;
 import common.Label;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -38,9 +39,18 @@ public class Parser {
                 break;
             case 2:
                 P2 p2 = context.getBean(P2.class);
+                int x1 = coordinates[0];
+                int y1 = coordinates[1];
+                int x2 = coordinates[2];
+                int y2 = coordinates[3];
 
                 Graph graphP2 = p2.prepareTestGraph(img);
-                Node nodeI =  graphP2.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
+                Node nodeI =  graphP2.getNodeSet().stream()
+                        .filter(node -> node.hasAttribute("label") &&
+                                        node.<Label>getAttribute("label").equals(Label.I) &&
+                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2 &&
+                                        node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2
+                        ).findFirst().get();
                 Graph g2 = p2.run(graphP2, img, nodeI);
                 g2.display();
                 break;
