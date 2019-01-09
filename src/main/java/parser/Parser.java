@@ -15,9 +15,9 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @ComponentScan({"productions"})
 public class Parser {
@@ -26,7 +26,17 @@ public class Parser {
         return Arrays.stream(line.split(delimiterRegex)).mapToInt(Integer::parseInt).toArray();
     }
 
-    void runProduction(int productionNumber, int[] coordinates, int[] rgb) throws IOException {
+    private Stream<Node> neighourStream(Node node) {
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(
+                        node.getNeighborNodeIterator(),
+                        Spliterator.ORDERED
+                ),
+                false
+        );
+    }
+
+    Graph runProduction(int productionNumber, int[] coordinates, int[] rgb, Graph graph) throws IOException {
         ApplicationContext context = new AnnotationConfigApplicationContext(Parser.class);
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("colors.jpg")));
@@ -34,9 +44,7 @@ public class Parser {
         switch(productionNumber){
             case 1:
                 P1 p1 = context.getBean(P1.class);
-                Graph graph = p1.run(img);
-                graph.display();
-                break;
+                return p1.run(img);
             case 2:
                 P2 p2 = context.getBean(P2.class);
                 int x1 = coordinates[0];
@@ -44,38 +52,54 @@ public class Parser {
                 int x2 = coordinates[2];
                 int y2 = coordinates[3];
 
-                Graph graphP2 = p2.prepareTestGraph(img);
-                Node nodeI =  graphP2.getNodeSet().stream()
+                Node nodeI = graph.getNodeSet().stream()
                         .filter(node -> node.hasAttribute("label") &&
                                         node.<Label>getAttribute("label").equals(Label.I) &&
                                         node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2 &&
                                         node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2
                         ).findFirst().get();
-                Graph g2 = p2.run(graphP2, img, nodeI);
-                g2.display();
-                break;
+                return p2.run(graph, img, nodeI);
             case 3:
                 break;
             case 4:
                 P4 p4 = context.getBean(P4.class);
 
-                // Preparing P4 test graph
-                Graph preP4 = p4.prepareTestGraph(img);
-                preP4.display().disableAutoLayout();
+                x1 = coordinates[0];
+                y1 = coordinates[1];
+                x2 = coordinates[2];
+                y2 = coordinates[3];
 
                 // Extracting input nodes for P4 test
-                Node nodeFN = p4.getNodeByLabel(preP4, Label.FN);
-                Node nodeFW = p4.getNodeByLabel(preP4, Label.FW);
-                Node nodeFE = p4.getNodeByLabel(preP4, Label.FE);
+//                Node nodeFN = p4.getNodeByLabel(graph, Label.FN);
+                Node nodeFN = graph.getNodeSet().stream()
+                        .filter(node -> node.<Label>getAttribute("label").equals(Label.FN) &&
+                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2 &&
+                                        node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2)
+                        .findFirst().get();
+
+                Node nodeFW = graph.getNodeSet().stream()
+                        .filter(node ->
+                                node.<Geom>getAttribute("geom").getX() == x1 &&
+                                node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2
+                        ).flatMap(this::neighourStream)
+                        .filter(node -> node.<Label>getAttribute("label").equals(Label.FW))
+                        .findFirst().get();
+
+                Node nodeFE = graph.getNodeSet().stream()
+                        .filter(node ->
+                                node.<Geom>getAttribute("geom").getX() == x2 &&
+                                        node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2
+                        ).flatMap(this::neighourStream)
+                        .filter(node -> node.<Label>getAttribute("label").equals(Label.FE))
+                        .findFirst().get();
 
                 // Run P4 production
-                Graph postP4 = p4.run(preP4, img, nodeFN, nodeFW, nodeFE);
-                postP4.display().disableAutoLayout();
-                break;
+
+                return p4.run(graph, img, nodeFN, nodeFW, nodeFE);
             default:
                 System.out.println("Production number is wrong");
-
         }
+        return null;
     }
 
     public void parseFileAndRunProduction(String pathname) {
@@ -85,11 +109,18 @@ public class Parser {
         File f = new File(Objects.requireNonNull(classLoader.getResource(pathname)).getFile());
         try {
             scanner = new Scanner(f);
-            int productionNumber = Integer.parseInt(scanner.nextLine());
-            int[] coordinates = parseNumbersInLine(scanner.nextLine());
-            int[] rgb = parseNumbersInLine(scanner.nextLine());
+            Graph graph = null;
 
-            runProduction(productionNumber, coordinates, rgb);
+            while (scanner.hasNext()) {
+                int productionNumber = Integer.parseInt(scanner.nextLine());
+                int[] coordinates = parseNumbersInLine(scanner.nextLine());
+                int[] rgb;
+                if (scanner.hasNext())
+                    rgb = parseNumbersInLine(scanner.nextLine());
+                else
+                    rgb = null;
+                graph = runProduction(productionNumber, coordinates, rgb, graph);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
