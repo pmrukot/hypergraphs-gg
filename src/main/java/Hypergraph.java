@@ -3,6 +3,7 @@ import common.Label;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
+import org.graphstream.ui.swingViewer.Viewer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -17,20 +18,27 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
 
+import static java.lang.Thread.sleep;
+
 
 @ComponentScan({"productions"})
 public class Hypergraph {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         ApplicationContext context = new AnnotationConfigApplicationContext(Hypergraph.class);
         P1 p1 = context.getBean(P1.class);
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("colors.jpg")));
-//        Graph graph = p1.run(img);
-//        graph.display();
 
-        //P2
+        //p1
+
+        Graph graph = p1.run(img);
+        graph.addAttribute("ui.stylesheet", "graph { padding: 200px; fill-color: #EEE; }");
+        Viewer viewer = graph.display();
+        viewer.disableAutoLayout();
+        sleep(10000);
+//P2
 //        P2 p2 = context.getBean(P2.class);
 //        Graph graphP2 = p2.prepareTestGraph(img);
 //        Node nodeI =  graphP2.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
