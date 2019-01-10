@@ -2,6 +2,7 @@ package parser;
 
 import common.Geom;
 import common.Label;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.springframework.context.ApplicationContext;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 import productions.P1;
 import productions.P2;
+import productions.P3;
 import productions.P4;
 
 import javax.imageio.ImageIO;
@@ -44,7 +46,7 @@ public class Parser {
         switch(productionNumber){
             case 1:
                 P1 p1 = context.getBean(P1.class);
-                return p1.run(img);
+                return p1.run(coordinates, rgb);
             case 2:
                 P2 p2 = context.getBean(P2.class);
                 int x1 = coordinates[0];
@@ -60,6 +62,12 @@ public class Parser {
                         ).findFirst().get();
                 return p2.run(graph, img, nodeI);
             case 3:
+                P3 p3 = context.getBean(P3.class);
+                Graph testGraph = p3.prepareTestGraph(img);
+                Edge edge = testGraph.getEdge("1-2");
+                Node f1 = testGraph.getNode("f1");
+                Graph g3 = p3.run(testGraph, img, edge, f1);
+                g3.display().disableAutoLayout();
                 break;
             case 4:
                 P4 p4 = context.getBean(P4.class);
@@ -121,6 +129,7 @@ public class Parser {
                     rgb = null;
                 graph = runProduction(productionNumber, coordinates, rgb, graph);
             }
+            graph.display();
 
         } catch (Exception e) {
             e.printStackTrace();
