@@ -27,8 +27,8 @@ public class Hypergraph {
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("colors.jpg")));
-        Graph graph = p1.run(img);
-        graph.display();
+//        Graph graph = p1.run(img);
+//        graph.display();
 
         //P2
 //        P2 p2 = context.getBean(P2.class);
@@ -37,12 +37,12 @@ public class Hypergraph {
 //        Graph g2 = p2.run(graphP2, img, nodeI);
 //        g2.display();
 
-//        P3 p3 = context.getBean(P3.class);
-//        Graph testGraph = p3.prepareTestGraph(img);
-//        Edge edge = testGraph.getEdge("1-2");
-//        Node f1 = testGraph.getNode("f1");
-//        Graph g3 = p3.run(testGraph, img, edge, f1);
-//        g3.display().disableAutoLayout();
+        P3 p3 = context.getBean(P3.class);
+        Graph testGraph = p3.prepareTestGraph(img);
+        testGraph.display().disableAutoLayout();
+        Node edge = testGraph.getNode("B1-2");
+        Graph g3 = p3.run(testGraph, img, edge);
+        g3.display().disableAutoLayout();
 
 
 //        // Preparing P4 test graph

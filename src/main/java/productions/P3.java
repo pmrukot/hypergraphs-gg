@@ -13,54 +13,87 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Optional;
 
 @Service
 public class P3 {
-    public Graph run(Graph graph, BufferedImage img, Edge border, Node nodeF) {
-        java.util.List<Node> p1;
-        java.util.List<Node> p2;
+    public Graph run(Graph graph, BufferedImage img, Node border) {
+        java.util.List<Node> path;
         Node n0;
         Node n1;
-        if (border == null || !border.hasAttribute("label") || border.getAttribute("label") != Label.B ||
-                nodeF == null || !nodeF.hasAttribute("label") || (nodeF.getAttribute("label") != Label.FN &&
-                nodeF.getAttribute("label") != Label.FW && nodeF.getAttribute("label") != Label.FE &&
-                nodeF.getAttribute("label") != Label.FS)) {
+        Label testLabel = null;
+        if (border == null || !border.hasAttribute("label") || border.getAttribute("label") != Label.B) {
             return graph;
         }
+        int borderGeomx = border.getAttribute("x");
+        int borderGeomy = border.getAttribute("y");
         AStar aStar = new AStar(graph);
-        n0 = border.getNode0();
-        n1 = border.getNode1();
-        aStar.compute(n0.getId(), nodeF.getId());
-        p1 = aStar.getShortestPath().getNodePath();
-        aStar.compute(n1.getId(), nodeF.getId());
-        p2 = aStar.getShortestPath().getNodePath();
-        if (p2.size() != 4 || p1.size() != 4 || p1.get(1).getAttribute("label") != Label.I ||
-                p2.get(1).getAttribute("label") != Label.I)
-            return graph;
+        Iterator<Node> neighborNodeIterator = border.getNeighborNodeIterator();
 
+        n0 = neighborNodeIterator.next();
+        n1 = neighborNodeIterator.next();
+        graph.removeNode(border);
+        aStar.compute(n0.getId(), n1.getId());
+        path = aStar.getShortestPath().getNodePath();
+        if (path.size() != 5) {
+            repair(graph, n0, n1);
+            return graph;
+        }
+        Node n3 = path.get(2);
+        int x1 = borderGeomx - ((Geom) n3.getAttribute("geom")).getX();
+        int y1 = borderGeomy - ((Geom) n3.getAttribute("geom")).getY();
+        if (x1 < 0 && y1 == 0)
+            testLabel = Label.FE;
+        else if (x1 > 0 && y1 == 0) {
+            testLabel = Label.FW;
+        } else if (x1 == 0 && y1 < 0) {
+            testLabel = Label.FS;
+        } else if (x1 == 0 && y1 > 0) {
+            testLabel = Label.FN;
+        } else {
+            repair(graph, n0, n1);
+            return graph;
+        }
+        ArrayList<Node> nodes = new ArrayList<>();
+        n3.getNeighborNodeIterator().forEachRemaining(nodes::add);
+        Label finalTestLabel = testLabel;
+        Optional<Node> nodeFOpt = nodes.stream().filter(n -> n.getAttribute("label") == finalTestLabel).findFirst();
+        if (!nodeFOpt.isPresent()) {
+            repair(graph, n0, n1);
+            return graph;
+        }
+        Node nodeF = nodeFOpt.get();
         Geom g1 = n1.getAttribute("geom");
         Geom g0 = n0.getAttribute("geom");
-        graph.removeEdge(border);
         int x = (g0.getX() + g1.getX()) / 2;
         int y = (g0.getY() + g1.getY()) / 2;
         Node v = addNode(graph, Integer.toString(graph.getNodeCount() + 1), new Geom(x, y),
                 Type.VERTEX, Label.V, getColor(img, x, y));
-        addBorderEdge(graph, v, n0);
-        addBorderEdge(graph, v, n1);
-        addEdge(graph, v, p1.get(1));
-        addEdge(graph, v, p2.get(1));
+        addBorderEdge(graph, v.getId(), n0.getId(), (g0.getX() + x) / 2, (g0.getY() + y) / 2);
+        addBorderEdge(graph, v.getId(), n1.getId(), (g1.getX() + x) / 2, (g1.getY() + y) / 2);
+
+        addEdge(graph, v, path.get(1));
+        addEdge(graph, v, path.get(3));
         addEdge(graph, v, nodeF);
         return graph;
+    }
+
+    private void repair(Graph graph, Node n0, Node n1) {
+        Geom n0geom = n0.getAttribute("geom");
+        Geom n1geom = n1.getAttribute("geom");
+        addBorderEdge(graph, n0.getId(), n1.getId(), (n0geom.getX() + n1geom.getX()) / 2, (n0geom.getY() + n1geom.getY()) / 2);
     }
 
     public Graph prepareTestGraph(BufferedImage img) {
         int width = img.getWidth();
         int height = img.getHeight();
-        Geom center = new Geom((width - 1) / 2, (height - 1));
+        Geom center = new Geom((width - 1) / 2, 0);
 
         Graph graph = new SingleGraph(getClass().getName());
-        addNode(graph, "1", new Geom(0, 0), Type.VERTEX, Label.T, false, getColor(img, new Geom(0, 0)));
-        addNode(graph, "2", new Geom(width - 1, 0), Type.VERTEX, Label.T, false, getColor(img, new Geom(width - 1, 0)));
+        addNode(graph, "1", new Geom(0, height - 1), Type.VERTEX, Label.T, false, getColor(img, new Geom(0, 0)));
+        addNode(graph, "2", new Geom(width - 1, height - 1), Type.VERTEX, Label.T, false, getColor(img, new Geom(width - 1, 0)));
         addNode(graph, "3", center, Type.VERTEX, Label.T, false, getColor(img, center));
 
         Geom v4geom = new Geom((width - 1) / 4, (height - 1) / 2);
@@ -68,9 +101,9 @@ public class P3 {
         addNode(graph, "4", Type.HYPEREDGE, Label.I, v4geom);
         addNode(graph, "5", Type.HYPEREDGE, Label.I, v5geom);
 
-        addNode(graph, "f1", Type.HYPEREDGE, Label.FN, new Geom(center.getX(), center.getY() / 2));
+        addNode(graph, "f1", Type.HYPEREDGE, Label.FN, new Geom(center.getX(), (height - 1) / 2));
 
-        addBorderEdge(graph, "1", "2");
+        addBorderEdge(graph, "1", "2", (width - 1) / 2, (height - 1));
         addEdge(graph, "1", "4");
         addEdge(graph, "4", "3");
         addEdge(graph, "3", "5");
@@ -101,6 +134,7 @@ public class P3 {
         node.setAttribute("label", label);
         node.setAttribute("break", isBreak);
         node.setAttribute("rgb", rgb);
+        node.setAttribute("xy", geom.getX(), geom.getY());
     }
 
     private void addNode(Graph graph, String name, Type type, Label label, Geom geom) {
@@ -121,16 +155,17 @@ public class P3 {
         graph.addEdge(name, sourceName, targetName);
     }
 
-    private void addBorderEdge(Graph graph, Node sourceName, Node targetName) {
-        String name = sourceName.getId() + "-" + targetName.getId();
-        Edge edge = graph.addEdge(name, sourceName, targetName);
-        edge.addAttribute("label", Label.B);
-    }
+    private void addBorderEdge(Graph graph, String sourceName, String targetName, int x, int y) {
+        String nodeName = "B" + sourceName + "-" + targetName;
+        Node node = graph.addNode(nodeName);
+        node.addAttribute("label", Label.B);
+        node.setAttribute("type", Type.HYPEREDGE);
+        node.setAttribute("x", x);
+        node.setAttribute("y", y);
+        node.setAttribute("xy", x, y);
 
-    private void addBorderEdge(Graph graph, String sourceName, String targetName) {
-        String name = sourceName + "-" + targetName;
-        Edge edge = graph.addEdge(name, sourceName, targetName);
-        edge.addAttribute("label", Label.B);
+        graph.addEdge(sourceName + "-" + nodeName, sourceName, nodeName);
+        graph.addEdge(nodeName + "-" + targetName, nodeName, targetName);
     }
 
     private Color getColor(BufferedImage img, Geom geom) {

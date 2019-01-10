@@ -27,7 +27,7 @@ public class P3Test {
 
     private Graph graph;
     private BufferedImage img;
-    private Edge borderEdge;
+    private Node borderEdge;
     private Node f1;
     private P3 p3;
 
@@ -38,29 +38,28 @@ public class P3Test {
         File f = new File(Objects.requireNonNull(classLoader.getResource("colors.jpg")).getFile());
         img = ImageIO.read(f);
         graph = p3.prepareTestGraph(img);
-        borderEdge = graph.getEdge("1-2");
+        borderEdge = graph.getNode("B1-2");
         f1 = graph.getNode("f1");
     }
 
     @Test
     public void testP3() {
-        Graph result = p3.run(graph, img, borderEdge, f1);
+        Graph result = p3.run(graph, img, borderEdge);
         result.display();
 
         Collection<Node> nodeSet = result.getNodeSet();
         Collection<Edge> edgeSet = result.getEdgeSet();
         List<Object> labels = edgeSet.stream().map(Element::getId).collect(Collectors.toList());
-        assertEquals(7, nodeSet.size());
-        assertEquals(10, labels.size());
-        String[] nodes = new String[]{"f1-3", "1-4", "4-3", "3-5", "5-2", "7-1",
-        "7-2", "7-4", "7-5", "7-f1"};
+        assertEquals(9, nodeSet.size());
+        assertEquals(12, labels.size());
+        String[] nodes = new String[]{"f1-3", "1-4", "4-3", "3-5", "5-2", "7-4", "7-5", "7-f1", "3-5", "7-B7-1", "7-B7-2", "B7-2-2"};
         for (String node : nodes) {
             assertTrue(labels.contains(node));
         }
 
         Optional<Node> vNode = nodeSet.stream().filter(n -> n.getAttribute("label") == Label.V).findFirst();
         assertTrue(vNode.isPresent());
-        assertEquals(new Color(img.getRGB((img.getWidth()-1)/2, 0)), vNode.get().getAttribute("rgb"));
+        assertEquals(new Color(img.getRGB((img.getWidth()-1)/2, img.getHeight()-1)), vNode.get().getAttribute("rgb"));
     }
 
 }
