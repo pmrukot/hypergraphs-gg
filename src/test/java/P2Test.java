@@ -39,33 +39,45 @@ public class P2Test {
         File f = new File(Objects.requireNonNull(classLoader.getResource("colors.jpg")).getFile());
         BufferedImage img = ImageIO.read(f);
 
-        Graph initialGraph= p1.run(img);
-        Node nodeI =  initialGraph.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
+        Graph initialGraph = p1.run(img);
+        Node nodeI = initialGraph.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
         nodeI.setAttribute("break", true);
+
+        for (Edge e : initialGraph.getEdgeSet()) {
+            if(e.hasAttribute("label") && e.getAttribute("label").toString().equals(Label.B.toString())) {
+                initialGraph.removeEdge(e);
+            }
+        }
 
         Graph resultGraph = p2.run(initialGraph, img, nodeI);
 
         resultGraph.display();
 
         assertEquals(13, resultGraph.getNodeCount());
-        assertEquals(16, resultGraph.getEdgeCount());
+        assertEquals(12, resultGraph.getEdgeCount());
 
-        String[] expectedEdges = {"1-2", "2-4", "4-3", "3-1", "6-14", "6-11", "6-12", "6-13",
-                "6-7", "7-4", "6-8", "8-3", "6-9", "9-1", "6-10", "10-2"};
+        String[] expectedEdges = {"6-13",
+                "6-12",
+                "6-11",
+                "6-14",
+                "6-7",
+                "7-2",
+                "6-8",
+                "8-4",
+                "6-9",
+                "9-3",
+                "6-10",
+                "10-1"};
 
         List<String> actualEdges = new ArrayList<>();
         for (Edge edge : resultGraph.getEdgeSet()) {
             String id = edge.getId();
             actualEdges.add(id);
         }
+
         Assert.assertArrayEquals(expectedEdges, actualEdges.toArray());
 
     }
-
-    private Color getColor(BufferedImage img, int x, int y) {
-        return new Color(img.getRGB(x, y));
-    }
-
 
 
 }
