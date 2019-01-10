@@ -1,6 +1,5 @@
 package productions;
 
-import com.sun.javafx.fxml.builder.JavaFXImageBuilder;
 import common.*;
 import common.Label;
 import org.graphstream.graph.*;

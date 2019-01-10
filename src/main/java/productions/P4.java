@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Iterator;
+import java.io.BufferedWriter;
+import java.util.*;
+import java.util.stream.StreamSupport;
 
 @Service
 public class P4 {
