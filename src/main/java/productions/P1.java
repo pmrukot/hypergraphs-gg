@@ -20,13 +20,14 @@ public class P1 {
         Geom bottomLeft = new Geom(0,0);
         Geom topRight = new Geom(width - 1,height -1);
         Geom bottomRight = new Geom(width -1,0);
+        Geom center = new Geom(width/2, height/2);
 
         Graph graph = new SingleGraph("graph");
         addNode(graph, "1", topLeft, Type.VERTEX, Label.V, false, getColor(img, topLeft));
         addNode(graph, "2", topRight, Type.VERTEX, Label.V, false, getColor(img, topRight));
         addNode(graph, "3", bottomLeft, Type.VERTEX, Label.V, false, getColor(img, bottomLeft));
         addNode(graph, "4", bottomRight, Type.VERTEX, Label.V, false,getColor(img, bottomRight));
-        addNode(graph, "5", Type.HYPEREDGE, Label.I, false, width/2, height/2);
+        addNode(graph, "5", center, Type.HYPEREDGE, Label.I, false, null);
 
         addBorderEdge(graph, "1", "2", width/2, height-1);
         addBorderEdge(graph, "2", "4", width-1, height/2);
@@ -44,14 +45,6 @@ public class P1 {
         return new Color(img.getRGB(geom.getX(),geom.getY()));
     }
 
-    private void addNode(Graph graph, String name, Type type, Label label, boolean isBreak, int x, int y) {
-        Node node = graph.addNode(name);
-        node.setAttribute("type", type);
-        node.setAttribute("label", label);
-        node.setAttribute("break", isBreak);
-        node.setAttribute("x", x);
-        node.setAttribute("y", y);
-    }
 
     private void addNode(Graph graph, String name, Geom geom, Type type, Label label, boolean isBreak, Color rgb) {
         Node node = graph.addNode(name);
@@ -59,16 +52,19 @@ public class P1 {
         node.setAttribute("type", type);
         node.setAttribute("label", label);
         node.setAttribute("break", isBreak);
-        node.setAttribute("rgb", rgb);
         node.setAttribute("x", geom.getX());
         node.setAttribute("y", geom.getY());
 
-        String uiName = "geom = (" + geom.getX() + "," + geom.getY() + ")" + " : " + printColor(rgb) + " : " + name;
+        if (rgb != null) {
+            node.setAttribute("rgb", rgb);
+        }
+
+        String uiName = "geom = (" + geom.getX() + "," + geom.getY() + ")" + printColor(rgb) + " : " + name;
         node.addAttribute("ui.label", uiName);
     }
 
     private String printColor(Color rgb) {
-        return "rgb=(" + rgb.getRed() + "," + rgb.getGreen() + "," + rgb.getBlue() + ")";
+        return rgb != null ? " : rgb=(" + rgb.getRed() + "," + rgb.getGreen() + "," + rgb.getBlue() + ")" : "";
     }
 
     private void addEdge(Graph graph, String sourceName, String targetName) {
