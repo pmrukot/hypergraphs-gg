@@ -1,3 +1,4 @@
+import com.sun.org.apache.xpath.internal.NodeSet;
 import common.Label;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -5,11 +6,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import productions.P1;
+import productions.P2;
 import productions.P4;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Objects;
 
 
@@ -24,6 +27,14 @@ public class Hypergraph {
         BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("colors.jpg")));
         Graph graph = p1.run(img);
         graph.display();
+
+        //P2
+//        P2 p2 = context.getBean(P2.class);
+//        Graph graphP2 = p2.prepareTestGraph(img);
+//        Node nodeI =  graphP2.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
+//        Graph g2 = p2.run(graphP2, img, nodeI);
+//        g2.display();
+
 
 //        // Preparing P4 test graph
 //        P4 p4 = context.getBean(P4.class);

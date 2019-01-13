@@ -25,11 +25,16 @@ public class P2 {
     private P1 p1;
 
     public Graph prepareTestGraph(BufferedImage img) {
-        return p1.run(img);
+        Graph graph = p1.run(img);
+        Node nodeI =  graph.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
+        nodeI.setAttribute("break", true);
+        return graph;
     }
 
     private boolean verifyNodes(Graph graph, Node nodeI) {
-        if (nodeI == null || !Boolean.getBoolean(nodeI.getAttribute("break"))) {
+        Boolean breakAttribute = nodeI.getAttribute("break");
+
+        if (nodeI == null || !breakAttribute) {
             return false;
         }
         Iterator<Node> iterator = nodeI.getNeighborNodeIterator();
@@ -53,12 +58,11 @@ public class P2 {
             Node fe = createHyperEdge(graph, Label.FE);
             Node fw = createHyperEdge(graph, Label.FW);
             Node fs = createHyperEdge(graph, Label.FS);
-
             addEdge(graph, v, fn);
             addEdge(graph, v, fe);
             addEdge(graph, v, fw);
             addEdge(graph, v, fs);
-
+            graph.removeNode(nodeI);
 
         }
         return graph;
@@ -73,7 +77,6 @@ public class P2 {
             addEdge(graph, v, newI);
             addEdge(graph, newI, neighbour);
         }
-        graph.removeNode(nodeI);
         return v;
     }
 
