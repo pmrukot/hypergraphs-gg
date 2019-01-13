@@ -17,14 +17,20 @@ public class BitmapAproximator {
     public int[][] APPROX_G;
     public int[][] APPROX_B;
 
+    public BitmapAproximator() {
+        initializeTables(1000, 1000);
+    }
+
+    public BitmapAproximator(int maxX, int maxY) {
+        initializeTables(maxX, maxY);
+    }
+
     public void run(Color rgb1, Color rgb2, Color rgb3, Color rgb4, int x1, int y1, int x2, int y2) {
         fillTables(rgb1, rgb2, rgb3, rgb4, x1, y1, x2, y2);
-        drawImage(x2, y2);
+        drawImage(x1, y1, x2, y2);
     }
 
     private void fillTables(Color rgb1, Color rgb2, Color rgb3, Color rgb4, int x1, int y1, int x2, int y2) {
-        initializeTables(x2, y2);
-
         for (int px = x1; px <= x2; px++) {
             for (int py = y1; py <= y2; py++) {
                 APPROX_R[px][py] = rgb1.getRed() * get1stMultiplier(x1, y1, x2, y2, px, py)
@@ -43,10 +49,10 @@ public class BitmapAproximator {
         }
     }
 
-    private void drawImage(int x2, int y2) {
+    private void drawImage(int x1, int y1, int x2, int y2) {
         bitmap = new BufferedImage(x2+1, y2+1, BufferedImage.TYPE_INT_RGB);
-        for (int px = 0; px <= x2; px++) {
-            for (int py = 0; py <= y2; py++) {
+        for (int px = x1; px <= x2; px++) {
+            for (int py = y1; py <= y2; py++) {
                 bitmap.setRGB(px, py, getRGBValue(px, py));
             }
         }
