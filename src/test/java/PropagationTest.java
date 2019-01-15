@@ -12,9 +12,9 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -30,8 +30,6 @@ public class PropagationTest {
     private P4 p4;
     @InjectMocks
     private P5 p5;
-    @InjectMocks
-    private P6 p6;
 
     Graph graph;
 
@@ -45,51 +43,53 @@ public class PropagationTest {
 
         graph = p1.run(img);
 
-        Node nodeI = graph.getNodeSet().stream().filter(n -> n.getAttribute("label").equals(Label.I)).findFirst().get();
+        Node nodeI = graph.getNodeSet().stream()
+                .filter(n -> checkLabel(n, Label.I))
+                .findFirst()
+                .get();
 
         graph = p5.run(graph, img, nodeI);
         graph = p2.run(graph, img, nodeI);
 
-        Node nodeBN = graph.getNode("B1-2");
-        Node nodeBE = graph.getNode("B2-4");
-        Node nodeBS = graph.getNode("B4-3");
-        Node nodeBW = graph.getNode("B3-1");
-        Node nodeFN = p4.getNodeByLabel(graph, Label.FN);
-        Node nodeFW = p4.getNodeByLabel(graph, Label.FW);
-        Node nodeFE = p4.getNodeByLabel(graph, Label.FE);
-        Node nodeFS = p4.getNodeByLabel(graph, Label.FS);
+        List<Node> nodesLabeledB = graph.getNodeSet().stream()
+                .filter(n -> checkLabel(n, Label.B))
+                .collect(Collectors.toList());
 
-        // graph = p3.run(graph, img, nodeBN, nodeFN);
-        // graph = p3.run(graph, img, nodeBE, nodeFE);
-        // graph = p3.run(graph, img, nodeBS, nodeFS);
-        // graph = p3.run(graph, img, nodeBW, nodeFW);
+        for (Node node : nodesLabeledB) {
+            graph = p3.run(graph, img, node);
+        }
 
         graph.display();
 
         /***** Second Step *****/
 
-        List<Node> nodesLabeledI = graph.getNodeSet().stream().filter(n -> n.getAttribute("label").equals(Label.I)).collect(Collectors.toList());
+        List<Node> nodesLabeledI = graph.getNodeSet().stream()
+                .filter(n -> checkLabel(n, Label.I) && !isFirstVertexNeighbor(n))
+                .collect(Collectors.toList());
 
-        graph = p5.run(graph, img, nodesLabeledI.get(0));
-        graph = p5.run(graph, img, nodesLabeledI.get(1));
-        graph = p5.run(graph, img, nodesLabeledI.get(2));
-        graph = p2.run(graph, img, nodesLabeledI.get(0));
-        graph = p2.run(graph, img, nodesLabeledI.get(1));
-        graph = p2.run(graph, img, nodesLabeledI.get(2));
+        for (Node node : nodesLabeledI) {
+            graph = p5.run(graph, img, node);
+        }
 
-        // graph = p3.run(graph, img, connotfindB, secondLowestFN);
-        // graph = p3.run(graph, img, connotfindB, findNode(Label.FN, 1);
-        // graph = p3.run(graph, img, connotfindB, secondLowestFE);
-        // graph = p3.run(graph, img, connotfindB, findNode(Label.FE, 1);
-        // graph = p3.run(graph, img, connotfindB, secondHighestFW);
-        // graph = p3.run(graph, img, connotfindB, findNode(Label.FW, -2);
-        // graph = p3.run(graph, img, connotfindB, secondHighestFS);
-        // graph = p3.run(graph, img, connotfindB, findNode(Label.FS, -2);
-        // graph = p3.run(graph, img, connotfindB, highestFS);
-        // graph = p3.run(graph, img, connotfindB, findNode(Label.FS, -1);
-        // graph = p3.run(graph, img, connotfindB, highestFE);
-        // graph = p3.run(graph, img, connotfindB, findNode(Label.FE, -1);
+        for (Node node : nodesLabeledI) {
+            graph = p2.run(graph, img, node);
+        }
 
+        nodesLabeledB = graph.getNodeSet().stream()
+                .filter(n -> checkLabel(n, Label.B) && !isFirstVertexNeighbor(n))
+                .collect(Collectors.toList());
+
+        for (Node node : nodesLabeledB) {
+            graph = p3.run(graph, img, node);
+        }
+
+        List<Node> nodesLabeledF = graph.getNodeSet().stream()
+                .filter(n -> checkLabel(n, Label.FN) || checkLabel(n, Label.FW) || checkLabel(n, Label.FS) || checkLabel(n, Label.FE))
+                .collect(Collectors.toList());
+
+        for (Node node : nodesLabeledF) {
+            //graph = p4.run(graph, img, node);
+        }
         // graph = p4.run(graph, img, lowestFE, highestFN, secondLowestFS);
         // graph = p4.run(graph, img, findNode(Label.FE, 0), findNode(Label.FN, -1), findNode(Label.FS, 1));
         // graph = p4.run(graph, img, lowestFS, secondHighestFE, highestFW);
@@ -111,6 +111,21 @@ public class PropagationTest {
         Assert.assertTrue(nodeI.getAttribute("break"));
 
         graph.display();
+    }
+
+    private boolean checkLabel(Node n, Label label) {
+        return n.getAttribute("label").equals(label);
+    }
+
+    private boolean isFirstVertexNeighbor(Node node) {
+        Iterator<Node> neighborIterator = node.getNeighborNodeIterator();
+        while(neighborIterator.hasNext()) {
+            Node neighbor = neighborIterator.next();
+            if(neighbor.getId().equals("1") && neighbor.getAttribute("label").equals(Label.V)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Node findNode(Label label, Integer offset){

@@ -161,7 +161,7 @@ public class P4 {
             vNode.addAttribute("ui.label", "V: "+color.getRed()+" "+color.getGreen()+" "+color.getBlue());
 
             lowerNode.getNeighborNodeIterator().forEachRemaining(node -> {
-                    addEdge(graph, vNode.getId(), node.getId());
+                addEdge(graph, vNode.getId(), node.getId());
             });
 
             upperNode.getNeighborNodeIterator().forEachRemaining(node -> {
