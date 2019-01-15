@@ -99,12 +99,15 @@ public class PropagationTest {
 
         /***** Third Step *****/
 
-        nodeI = findNode(Label.I, -4);
+        nodeI = getFinalPropagationI();
 
         graph = p5.run(graph, img, nodeI);
         graph = p2.run(graph, img, nodeI);
 
-        nodeI = findNode(Label.I, 0);
+        nodeI = graph.getNodeSet().stream()
+                .filter(n -> checkLabel(n, Label.I) && isFirstVertexNeighbor(n))
+                .findFirst()
+                .get();
 
         graph = p5.run(graph, img, nodeI);
 
@@ -128,18 +131,6 @@ public class PropagationTest {
         return false;
     }
 
-    public Node findNode(Label label, Integer offset){
-        List<Node> nodes = graph.getNodeSet().stream()
-                .filter(n -> n.getAttribute("label").equals(label))
-                .collect(Collectors.toList());
-        if(offset < 0) {
-            return nodes.get(nodes.size() + offset);
-        }
-        else {
-            return nodes.get(offset);
-        }
-    }
-
     public Node getFinalPropagationI() {
         // warunek : ma 4 sasiadow + pierwszy i jest oddalony o 2 wezly
 
@@ -149,7 +140,7 @@ public class PropagationTest {
                 .get();
 
         List<Node> iNodes = graph.getNodeSet().stream()
-                .filter(n -> n.getAttribute("label").equals(Label.I))
+                .filter(n -> checkLabel(n, Label.I))
                 .collect(Collectors.toList());
 
         for (Node i : iNodes) {
