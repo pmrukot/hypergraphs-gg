@@ -1,4 +1,3 @@
-import com.sun.org.apache.xpath.internal.NodeSet;
 import common.Label;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;

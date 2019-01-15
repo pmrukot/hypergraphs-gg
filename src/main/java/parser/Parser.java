@@ -51,7 +51,7 @@ public class Parser {
         switch(productionNumber){
             case 1:
                 P1 p1 = context.getBean(P1.class);
-                return p1.run(coordinates, rgb);
+                return p1.run(img);
             case 2:
                 P2 p2 = context.getBean(P2.class);
                 x1 = coordinates[0];
@@ -88,7 +88,7 @@ public class Parser {
                                 node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2
                         ).findFirst().get();
 
-                return p3.run(testGraph, img, edge1, f1);
+                return p3.run(testGraph, img, null);
             case 4:
                 P4 p4 = context.getBean(P4.class);
 
