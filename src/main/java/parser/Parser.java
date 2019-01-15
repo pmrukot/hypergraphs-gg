@@ -43,6 +43,17 @@ public class Parser {
         img.setRGB(geom.getX(), geom.getY(), rgb.getRGB());
     }
 
+    private Node getFNeighbour(Graph graph, int x, int y, Label label) {
+        return graph.getNodeSet().stream()
+                .filter(node ->
+                        node.hasAttribute("geom") &&
+                                node.<Geom>getAttribute("geom").getX() == x &&
+                                node.<Geom>getAttribute("geom").getY() == y
+                ).flatMap(this::neighourStream)
+                .filter(node -> node.<Label>getAttribute("label").equals(label))
+                .findFirst().get();
+    }
+
     Graph runProduction(int productionNumber, int[] coordinates, int[] rgb, Graph graph, BufferedImage img) {
         ApplicationContext context = new AnnotationConfigApplicationContext(Parser.class);
 
@@ -106,21 +117,15 @@ public class Parser {
 
                 P3 p3 = context.getBean(P3.class);
                 Graph testGraph = p3.prepareTestGraph(img);
-                Edge edge1 = graph.getEdgeSet().stream()
-                        .filter(edge -> edge.getNode0().hasAttribute("geom") &&
-                                        edge.getNode1().hasAttribute("geom") &&
-                                        edge.getNode0().<Geom>getAttribute("geom").getX() == x1 &&
-                                        edge.getNode0().<Geom>getAttribute("geom").getY() == y1 &&
-                                        edge.getNode1().<Geom>getAttribute("geom").getX() == x2 &&
-                                        edge.getNode1().<Geom>getAttribute("geom").getY() == y1)
-                        .findFirst().get();
-                Node f1 = graph.getNodeSet().stream()
+                Node border = graph.getNodeSet().stream()
                         .filter(node -> node.hasAttribute("label") &&
-                                node.<Label>getAttribute("label").equals(Label.FN) &&
-                                node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2
-                        ).findFirst().get();
+                                        node.<Label>getAttribute("label").equals(Label.B) &&
+                                        node.hasAttribute("geom") &&
+                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2 &&
+                                        node.<Geom>getAttribute("geom").getY() == y1)
+                        .findFirst().get();
 
-                return p3.run(testGraph, img, null);
+                return p3.run(testGraph, img, border);
             case 4:
                 P4 p4 = context.getBean(P4.class);
 
@@ -140,23 +145,9 @@ public class Parser {
                                         node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2)
                         .findFirst().get();
 
-                Node nodeFW = graph.getNodeSet().stream()
-                        .filter(node ->
-                                node.hasAttribute("geom") &&
-                                node.<Geom>getAttribute("geom").getX() == x1 &&
-                                node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2
-                        ).flatMap(this::neighourStream)
-                        .filter(node -> node.<Label>getAttribute("label").equals(Label.FW))
-                        .findFirst().get();
+                Node nodeFW = getFNeighbour(graph, x1, (y1 + y2) / 2, Label.FW);
 
-                Node nodeFE = graph.getNodeSet().stream()
-                        .filter(node ->
-                                node.hasAttribute("geom") &&
-                                node.<Geom>getAttribute("geom").getX() == x2 &&
-                                node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2
-                        ).flatMap(this::neighourStream)
-                        .filter(node -> node.<Label>getAttribute("label").equals(Label.FE))
-                        .findFirst().get();
+                Node nodeFE = getFNeighbour(graph, x2, (y1 + y2) / 2, Label.FE);
 
                 return p4.run(graph, img, nodeFN, nodeFW, nodeFE);
             default:
