@@ -167,7 +167,7 @@ public class PropagationTest {
                     Node neighbour = iNeighbours.next();
                     Iterator<Node> neighboursOfNeighbours = neighbour.getNeighborNodeIterator();
                     while (neighboursOfNeighbours.hasNext()) {
-                        if (neighboursOfNeighbours.next().getId().equals(firstI.getId())) {
+                        if ((neighboursOfNeighbours.next().getId().equals(firstI.getId())) && (!i.getId().equals(firstI.getId()))) {
                             return i;
                         }
                     }
