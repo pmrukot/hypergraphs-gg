@@ -139,4 +139,41 @@ public class PropagationTest {
             return nodes.get(offset);
         }
     }
+
+    public Node getFinalPropagationI() {
+        // warunek : ma 4 sasiadow + pierwszy i jest oddalony o 2 wezly
+
+        Node firstI = graph.getNodeSet().stream()
+                .filter(n -> checkLabel(n, Label.I) && isFirstVertexNeighbor(n))
+                .findFirst()
+                .get();
+
+        List<Node> iNodes = graph.getNodeSet().stream()
+                .filter(n -> n.getAttribute("label").equals(Label.I))
+                .collect(Collectors.toList());
+
+        for (Node i : iNodes) {
+            Iterator<Node> iNeighbours = i.getNeighborNodeIterator();
+
+            int neighboursCount = 0;
+            while(iNeighbours.hasNext()) {
+                neighboursCount++;
+                iNeighbours.next();
+            }
+
+            if (neighboursCount == 4) {
+                iNeighbours = i.getNeighborNodeIterator();
+                while (iNeighbours.hasNext()){
+                    Node neighbour = iNeighbours.next();
+                    Iterator<Node> neighboursOfNeighbours = neighbour.getNeighborNodeIterator();
+                    while (neighboursOfNeighbours.hasNext()) {
+                        if (neighboursOfNeighbours.next().getId().equals(firstI.getId())) {
+                            return i;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
