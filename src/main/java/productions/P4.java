@@ -3,6 +3,7 @@ package productions;
 import common.Geom;
 import common.Label;
 import common.Type;
+
 import org.graphstream.algorithm.AStar;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
+import java.util.List;
 
 @Service
 public class P4 {
@@ -60,31 +62,11 @@ public class P4 {
         return graph;
     }
 
-    private Node removeLowerEdgeAndReturnLowerNode(Graph graph, Node node){
-        Edge firstEdge = node.getEdge(0);
-        Node firstNode = firstEdge.getNode0();
-        firstNode = firstNode!=node?firstNode:firstEdge.getNode1();
-
-        Edge secondEdge = node.getEdge(1);
-        Node secondNode = secondEdge.getNode0();
-        secondNode = secondNode!=node?secondNode:secondEdge.getNode1();
-
-        if(((Geom)secondNode.getAttribute("geom")).getY()<((Geom)firstNode.getAttribute("geom")).getY()){
-            graph.removeEdge(secondEdge);
-            return secondNode;
-        }
-        else{
-            graph.removeEdge(firstEdge);
-            return firstNode;
-        }
-    }
-
     private boolean verifyNodes(Graph graph, Node nodeFN, Node nodeFW, Node nodeFE) {
         if (nodeFN == null || nodeFW == null || nodeFE == null) {
             System.out.println("One ore more of the input nodes are null");
             return false;
         }
-
         if (nodeFN.getAttribute("label") != Label.FN || nodeFW.getAttribute("label") != Label.FW || nodeFE.getAttribute("label") != Label.FE) {
             System.out.println("One or more of the labels of input nodes are incorrect");
             return false;
@@ -120,13 +102,11 @@ public class P4 {
         if (NWpath.getNodeCount() != 5) {
             return false;
         }
-
         aStar.compute(nodeFN.getId(), nodeFE.getId());
         Path NEpath = aStar.getShortestPath();
         if (NEpath.getNodeCount() != 5) {
             return false;
         }
-
         aStar.compute(nodeFW.getId(), nodeFE.getId());
         Path WEpath = aStar.getShortestPath();
         if (WEpath.getNodeCount() != 7) {
@@ -140,25 +120,106 @@ public class P4 {
         return nodeFNgeom.getY() == nodeFWgeom.getY() && nodeFWgeom.getY() == nodeFEgeom.getY();
     }
 
-    public Graph run(Graph graph, BufferedImage img, Node nodeFN, Node nodeFW, Node nodeFE) {
-        if (verifyNodes(graph, nodeFN, nodeFW, nodeFE)) {
-            Node lowerNode = removeLowerEdgeAndReturnLowerNode(graph, nodeFN);
+    private Node removeLowerEdgeAndReturnLowerNode(Graph graph, Node node){
+        Edge firstEdge = node.getEdge(0);
+        Node firstNode = firstEdge.getNode0();
+        firstNode = firstNode!=node?firstNode:firstEdge.getNode1();
+
+        Edge secondEdge = node.getEdge(1);
+        Node secondNode = secondEdge.getNode0();
+        secondNode = secondNode!=node?secondNode:secondEdge.getNode1();
+
+        if(((Geom)secondNode.getAttribute("geom")).getY()<((Geom)firstNode.getAttribute("geom")).getY()){
+            graph.removeEdge(secondEdge);
+            return secondNode;
+        }
+        else{
+            graph.removeEdge(firstEdge);
+            return firstNode;
+        }
+    }
+
+    public Graph run(Graph graph, BufferedImage img, Node nodeFN) {
+        Node nodeFE = null;
+        Node nodeFW = null;
+        Iterator<Edge> edgeIterator = nodeFN.getEachEdge().iterator();
+        Node lowerNode = removeLowerEdgeAndReturnLowerNode(graph, nodeFN);
+        Node top = edgeIterator.next().getOpposite(nodeFN);
+        AStar aStar = new AStar(graph);
+        aStar.compute(top.getId(), lowerNode.getId());
+        if(aStar.noPathFound())
+            return graph;
+        Path path = aStar.getShortestPath();
+        List<Node> nodesOnPath = path.getNodePath();
+        if(nodesOnPath.size() != 5)
+            return graph;
+
+        Node nodeNextToFEorFW = nodesOnPath.get(2);
+        Iterator<Node> nodeIterator = nodeNextToFEorFW.getNeighborNodeIterator();
+        while(nodeIterator.hasNext()){
+            Node node = nodeIterator.next();
+            if(!nodesOnPath.contains(node) && ((HasSmallerXThan(node, nodeNextToFEorFW) && HasSmallerXThan(nodeFN, node)) || (HasSmallerXThan(nodeNextToFEorFW, node) && HasSmallerXThan(node, nodeFN)))){
+                if(HasSmallerXThan(node, nodeFN)){
+                    nodeFW = node;
+                }
+                else {
+                    nodeFE = node;
+                }
+                break;
+            }
+        }
+        if(nodeFE == null && nodeFW == null)
+            return graph;
+
+        Node temp = nodesOnPath.get(1);
+        graph.removeEdge(top, temp);
+
+        aStar = new AStar(graph);
+        aStar.compute(top.getId(), lowerNode.getId());
+        if(aStar.noPathFound())
+            return graph;
+        path = aStar.getShortestPath();
+        nodesOnPath = path.getNodePath();
+        if(nodesOnPath.size() != 5)
+            return graph;
+
+        nodeNextToFEorFW = nodesOnPath.get(2);
+        nodeIterator = nodeNextToFEorFW.getNeighborNodeIterator();
+        while(nodeIterator.hasNext()){
+            Node node = nodeIterator.next();
+            if(!nodesOnPath.contains(node) && ((HasSmallerXThan(node, nodeNextToFEorFW) && HasSmallerXThan(nodeFN, node)) || (HasSmallerXThan(nodeNextToFEorFW, node) && HasSmallerXThan(node, nodeFN)))){
+                if(HasSmallerXThan(node, nodeFN)){
+                    nodeFW = node;
+                }
+                else {
+                    nodeFE = node;
+                }
+                break;
+            }
+        }
+        if(nodeFE == null || nodeFW == null)
+            return graph;
+
+        addEdge(graph, top.getId(), temp.getId());
+
+        if(verifyNodes(graph, nodeFN, nodeFW, nodeFE)) {
+
             Node upperNode = nodeFN.getNeighborNodeIterator().next();
 
-            String fsId = Integer.toString(Integer.parseInt(nodeFN.getId())+1);
+            String fsId = Integer.toString(Integer.parseInt(nodeFN.getId()) + 1);
             Geom fnGeom = nodeFN.getAttribute("geom");
             Geom nodeUnderFnGeom = lowerNode.getAttribute("geom");
             Geom nodeAboveFnGeom = upperNode.getAttribute("geom");
-            Geom fnNewGeom = new Geom((fnGeom.getX()+nodeAboveFnGeom.getX())/2, (fnGeom.getY()+nodeAboveFnGeom.getY())/2);
+            Geom fnNewGeom = new Geom((fnGeom.getX() + nodeAboveFnGeom.getX()) / 2, (fnGeom.getY() + nodeAboveFnGeom.getY()) / 2);
             nodeFN.setAttribute("geom", fnNewGeom);
             nodeFN.setAttribute("xy", fnNewGeom.getX(), fnNewGeom.getY());
 
-            addNode(graph, fsId, Type.HYPEREDGE, Label.FS, new Geom((fnGeom.getX()+nodeUnderFnGeom.getX())/2, (fnGeom.getY()+nodeUnderFnGeom.getY())/2));
+            addNode(graph, fsId, Type.HYPEREDGE, Label.FS, new Geom((fnGeom.getX() + nodeUnderFnGeom.getX()) / 2, (fnGeom.getY() + nodeUnderFnGeom.getY()) / 2));
             addEdge(graph, fsId, lowerNode.getId());
             Color color = getColor(img, fnGeom);
             Node vNode = addNode(graph, "V", Type.HYPEREDGE, Label.V, fnGeom, color);
 
-            vNode.addAttribute("ui.label", "V: "+color.getRed()+" "+color.getGreen()+" "+color.getBlue());
+            vNode.addAttribute("ui.label", "V: " + color.getRed() + " " + color.getGreen() + " " + color.getBlue());
 
             lowerNode.getNeighborNodeIterator().forEachRemaining(node -> {
                 addEdge(graph, vNode.getId(), node.getId());
@@ -172,6 +233,10 @@ public class P4 {
             addEdge(graph, vNode.getId(), nodeFE.getId());
         }
         return graph;
+    }
+
+    public boolean HasSmallerXThan(Node a, Node b){
+        return ((Geom)a.getAttribute("geom")).getX() < ((Geom)b.getAttribute("geom")).getX();
     }
 
     public Node getNodeByLabel(Graph graph, Label label){

@@ -1,8 +1,10 @@
 import common.Geom;
 import common.Label;
 import common.Type;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -15,6 +17,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
@@ -35,23 +39,45 @@ public class P2Test {
         File f = new File(Objects.requireNonNull(classLoader.getResource("colors.jpg")).getFile());
         BufferedImage img = ImageIO.read(f);
 
-        //todo - write a separate method to generate graph which returns a graph instead of using implementation of p1
-        Graph initialGraph= p1.run(img);
-        Node nodeI =  initialGraph.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
+        Graph initialGraph = p1.run(img);
+        Node nodeI = initialGraph.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
         nodeI.setAttribute("break", true);
+
+        for (Edge e : initialGraph.getEdgeSet()) {
+            if(e.hasAttribute("label") && e.getAttribute("label").toString().equals(Label.B.toString())) {
+                initialGraph.removeEdge(e);
+            }
+        }
 
         Graph resultGraph = p2.run(initialGraph, img, nodeI);
 
         resultGraph.display();
 
-        //todo - assertions
-        assertEquals(13 /* not sure if it should be 9 or 13 */, resultGraph.getNodeCount());
-    }
+        assertEquals(13, resultGraph.getNodeCount());
+        assertEquals(12, resultGraph.getEdgeCount());
 
-    private Color getColor(BufferedImage img, int x, int y) {
-        return new Color(img.getRGB(x, y));
-    }
+        String[] expectedEdges = {"6-13",
+                "6-12",
+                "6-11",
+                "6-14",
+                "6-7",
+                "7-2",
+                "6-8",
+                "8-4",
+                "6-9",
+                "9-3",
+                "6-10",
+                "10-1"};
 
+        List<String> actualEdges = new ArrayList<>();
+        for (Edge edge : resultGraph.getEdgeSet()) {
+            String id = edge.getId();
+            actualEdges.add(id);
+        }
+
+        Assert.assertArrayEquals(expectedEdges, actualEdges.toArray());
+
+    }
 
 
 }
