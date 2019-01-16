@@ -2,7 +2,6 @@ package parser;
 
 import common.Geom;
 import common.Label;
-import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.springframework.context.ApplicationContext;
@@ -33,7 +32,7 @@ public class Parser {
         img.setRGB(geom.getX(), geom.getY(), rgb.getRGB());
     }
 
-    private Stream<Node> neighourStream(Node node) {
+    private Stream<Node> neighbourStream(Node node) {
         return StreamSupport.stream(
                 Spliterators.spliteratorUnknownSize(
                         node.getNeighborNodeIterator(),
@@ -49,7 +48,7 @@ public class Parser {
                         node.hasAttribute("geom") &&
                                 node.<Geom>getAttribute("geom").getX() == x &&
                                 node.<Geom>getAttribute("geom").getY() == y
-                ).flatMap(this::neighourStream)
+                ).flatMap(this::neighbourStream)
                 .filter(node -> node.<Label>getAttribute("label").equals(label))
                 .findFirst().get();
     }
