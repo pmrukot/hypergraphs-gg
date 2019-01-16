@@ -23,6 +23,8 @@ public class P2 {
     @Autowired
     private P1 p1;
 
+    int distanceFromVToF1;
+
     public Graph prepareTestGraph(BufferedImage img) {
         Graph graph = p1.run(img);
         Node nodeI = graph.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
@@ -54,10 +56,20 @@ public class P2 {
         if (verifyNodes(graph, nodeI)) {
 
             Node v = replaceI(graph, nodeI);
-            Node fn = createHyperEdge(graph, Label.FN);
-            Node fe = createHyperEdge(graph, Label.FE);
-            Node fw = createHyperEdge(graph, Label.FW);
-            Node fs = createHyperEdge(graph, Label.FS);
+
+
+            ArrayList<Node> nodes = new ArrayList<Node>();
+            for (Iterator<Node> it = v.getNeighborNodeIterator(); it.hasNext(); ) {
+                nodes.add(it.next());
+            }
+//            this.distanceFromVToF1 = calculateDistanceFromVToF1(nodes);
+            int x = ((Geom) v.getAttribute("geom")).getX();
+            int y = ((Geom) v.getAttribute("geom")).getY();
+
+            Node fn = createHyperEdge(graph, Label.FN, x, y +distanceFromVToF1);
+            Node fe = createHyperEdge(graph, Label.FE, x + distanceFromVToF1, y);
+            Node fw = createHyperEdge(graph, Label.FW, x - distanceFromVToF1, y);
+            Node fs = createHyperEdge(graph, Label.FS, x, y - distanceFromVToF1);
             addEdge(graph, v, fn);
             addEdge(graph, v, fe);
             addEdge(graph, v, fw);
@@ -77,14 +89,35 @@ public class P2 {
             y += ((Geom) neighbour.getAttribute("geom")).getY();
 
         }
-        Node v = createVertexToReplaceI(graph, nodeI, x / 4, y / 4);
+        int vx = x / 4;
+        int vy = y / 4;
+        Node v = createVertexToReplaceI(graph, nodeI, vx, vy);
+
+        ArrayList<Node> nodes = new ArrayList<Node>();
         for (Iterator<Node> it = nodeI.getNeighborNodeIterator(); it.hasNext(); ) {
-            Node neighbour = it.next();
-            // graph.removeEdge(nodeI, neighbour); not needed, as we remove the I node later
-            Node newI = createHyperEdge(graph, Label.I);
-            addEdge(graph, v, newI);
-            addEdge(graph, newI, neighbour);
+            nodes.add(it.next());
         }
+
+        this.distanceFromVToF1 = calculateDistanceFromVToF1(nodes);
+
+
+
+        Node newI1 = createHyperEdge(graph, Label.I, vx - distanceFromVToF1, vy+distanceFromVToF1);
+        addEdge(graph, v, newI1);
+        addEdge(graph, newI1, getTopLeftNode(nodes));
+
+        Node newI2 = createHyperEdge(graph, Label.I, vx + distanceFromVToF1, vy+distanceFromVToF1);
+        addEdge(graph, v, newI2);
+        addEdge(graph, newI2, getTopRightNode(nodes));
+
+        Node newI3 = createHyperEdge(graph, Label.I, vx - distanceFromVToF1, vy-distanceFromVToF1);
+        addEdge(graph, v, newI3);
+        addEdge(graph, newI3, getBottomLeftNode(nodes));
+
+        Node newI4 = createHyperEdge(graph, Label.I, vx + distanceFromVToF1, vy-distanceFromVToF1);
+        addEdge(graph, v, newI4);
+        addEdge(graph, newI4, getBottomRightNode(nodes));
+
         return v;
     }
 
@@ -96,6 +129,11 @@ public class P2 {
     private Node createHyperEdge(Graph graph, Label label) {
         return addNode(graph, Integer.toString(getNewMaxNodeId(graph)),
                 Type.HYPEREDGE, label, false);
+    }
+
+    private Node createHyperEdge(Graph graph, Label label, int x, int y) {
+        return addNode(graph, Integer.toString(getNewMaxNodeId(graph)), new Geom(x, y),
+                Type.HYPEREDGE, label, false, null, x, y);
     }
 
 
@@ -130,12 +168,64 @@ public class P2 {
     }
 
     private int getNewMaxNodeId(Graph graph) {
-        OptionalInt result = graph.getNodeSet().stream().mapToInt(n -> Integer.parseInt(n.getId())).max();
+        OptionalInt result = graph.getNodeSet().stream().map(n -> n.getId()).filter(id -> tryParseInt(id)).mapToInt(id -> Integer.valueOf(id)).max();
         if (result.isPresent()) {
             return result.getAsInt() + 1;
         } else {
             return 0;
         }
+    }
+
+    boolean tryParseInt(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    Positions getPositions(ArrayList<Node> nodes) {
+        Positions pos = new Positions();
+        pos.x1 = nodes.stream().mapToInt(n -> ((Geom) n.getAttribute("geom")).getX()).min().getAsInt();
+        pos.x2 = nodes.stream().mapToInt(n -> ((Geom) n.getAttribute("geom")).getX()).max().getAsInt();
+        pos.y1 = nodes.stream().mapToInt(n -> ((Geom) n.getAttribute("geom")).getY()).min().getAsInt();
+        pos.y2 = nodes.stream().mapToInt(n -> ((Geom) n.getAttribute("geom")).getY()).max().getAsInt();
+
+        return pos;
+    }
+
+    int calculateDistanceFromVToF1(ArrayList<Node> nodes) {
+        Positions positions = getPositions(nodes);
+
+        return ((positions.x2 - positions.x1) + (positions.y2 - positions.y1)) / 8;
+
+    }
+
+    Node getTopLeftNode(ArrayList<Node> nodes) {
+        Positions positions = getPositions(nodes);
+        return nodes.stream().filter(n -> ((Geom) n.getAttribute("geom")).getX() == positions.x1 && ((Geom) n.getAttribute("geom")).getY() == positions.y2).findFirst().get();
+    }
+
+    Node getTopRightNode(ArrayList<Node> nodes) {
+        Positions positions = getPositions(nodes);
+        return nodes.stream().filter(n -> ((Geom) n.getAttribute("geom")).getX() == positions.x2 && ((Geom) n.getAttribute("geom")).getY() == positions.y2).findFirst().get();
+    }
+    Node getBottomLeftNode(ArrayList<Node> nodes) {
+        Positions positions = getPositions(nodes);
+        return nodes.stream().filter(n -> ((Geom) n.getAttribute("geom")).getX() == positions.x1 && ((Geom) n.getAttribute("geom")).getY() == positions.y1).findFirst().get();
+    }
+    Node getBottomRightNode(ArrayList<Node> nodes) {
+        Positions positions = getPositions(nodes);
+        return nodes.stream().filter(n -> ((Geom) n.getAttribute("geom")).getX() == positions.x2 && ((Geom) n.getAttribute("geom")).getY() == positions.y1).findFirst().get();
+    }
+
+
+    class Positions {
+        public int x1;
+        public int x2;
+        public int y1;
+        public int y2;
     }
 
 
