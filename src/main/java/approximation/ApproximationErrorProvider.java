@@ -8,7 +8,9 @@ import org.graphstream.graph.Node;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ApproximationErrorProvider {
@@ -25,7 +27,31 @@ public class ApproximationErrorProvider {
     }
 
     private double calculateErrorForElement(Graph graph, BufferedImage image, List<Node> nodes) {
-        assert nodes.size() == 4;
+        int size = nodes.size();
+        assert size == 4 || size == 3;
+
+        if (size == 3) {
+            Map<Integer, Integer> xMap = new HashMap<>();
+            Map<Integer, Integer> yMap = new HashMap<>();
+            nodes.stream().map(n -> (Geom) n.getAttribute("geom"))
+                    .forEach(geom -> {
+                        xMap.put(geom.getX(), xMap.getOrDefault(geom.getX(), 0) + 1);
+                        yMap.put(geom.getX(), yMap.getOrDefault(geom.getX(), 0) + 1);
+                    });
+            List<Integer> xCollect = xMap.entrySet().stream().filter(e -> e.getValue() == 1).map(Map.Entry::getKey).collect(Collectors.toList());
+            List<Integer> yCollect = yMap.entrySet().stream().filter(e -> e.getValue() == 1).map(Map.Entry::getKey).collect(Collectors.toList());
+            assert xCollect.size() == 1;
+            assert yCollect.size() == 1;
+
+            Geom geom = new Geom(xCollect.get(0), yCollect.get(0));
+            Node v4 = graph.addNode("v4");
+            v4.setAttribute("geom", geom);
+            v4.setAttribute("xy", geom.getX(), geom.getY());
+            v4.setAttribute("xy", geom.getX(), geom.getY());
+            v4.setAttribute("rgb", getColor(image, geom));
+            nodes.add(v4);
+        }
+
 
         nodes.sort((n1, n2) -> {
             Geom n1Geom = n1.getAttribute("geom");
@@ -59,9 +85,9 @@ public class ApproximationErrorProvider {
                 double diff_g = color.getGreen();
                 double diff_b = color.getBlue();
 
-                double fx = ((double)x - node1Geom.getX()) / xLength;
+                double fx = ((double) x - node1Geom.getX()) / xLength;
                 double nfx = 1 - fx;
-                double fy = ((double)(y - node3Geom.getY())) / yLength;
+                double fy = ((double) (y - node3Geom.getY())) / yLength;
                 double nfy = 1 - fy;
 
                 diff_r -= getColor(image, node1Geom).getRed() * nfx * fy;
