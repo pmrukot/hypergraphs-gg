@@ -30,7 +30,7 @@ public class ApproximationErrorTest {
         }
 
         Graph graph = p1.run(image);
-        ApproximationError approximationError = new ApproximationError(image);
+        ApproximationError approximationError = new ApproximationError(image, graph);
         Double error = approximationError.compute(graph.getNode("5"));
 
         assertEquals(0., error, 1e-15);
@@ -52,7 +52,7 @@ public class ApproximationErrorTest {
         image.setRGB(width - 1, height - 1, Color.RED.getRGB());
 
         Graph graph = p1.run(image);
-        ApproximationError approximationError = new ApproximationError(image);
+        ApproximationError approximationError = new ApproximationError(image, graph);
         Double error = approximationError.compute(graph.getNode("5"));
 
         assertEquals(Double.valueOf(227587.5), error);
