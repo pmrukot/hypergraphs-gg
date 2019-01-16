@@ -88,28 +88,26 @@ public class PropagationTest {
                 .collect(Collectors.toList());
 
         for (Node node : nodesLabeledF) {
-            //graph = p4.run(graph, img, node);
+            graph = p4.run(graph, img, node);
         }
-        // graph = p4.run(graph, img, lowestFE, highestFN, secondLowestFS);
-        // graph = p4.run(graph, img, findNode(Label.FE, 0), findNode(Label.FN, -1), findNode(Label.FS, 1));
-        // graph = p4.run(graph, img, lowestFS, secondHighestFE, highestFW);
-        // graph = p4.run(graph, img, findNode(Label.FS, 0), findNode(Label.FE, -2), findNode(Label.FW, -1));
 
         graph.display();
 
         /***** Third Step *****/
 
-        nodeI = getFinalPropagationI();
+        nodeI = getFinalPropagationI(4);
 
         graph = p5.run(graph, img, nodeI);
         graph = p2.run(graph, img, nodeI);
+
+        nodeI = getFinalPropagationI(2);
+
+        graph = p5.run(graph, img, nodeI);
 
         nodeI = graph.getNodeSet().stream()
                 .filter(n -> checkLabel(n, Label.I) && isFirstVertexNeighbor(n))
                 .findFirst()
                 .get();
-
-        graph = p5.run(graph, img, nodeI);
 
         Assert.assertTrue(nodeI.getAttribute("break"));
 
@@ -131,7 +129,7 @@ public class PropagationTest {
         return false;
     }
 
-    public Node getFinalPropagationI() {
+    public Node getFinalPropagationI(int neededNeighbourCount) {
         // warunek : ma 4 sasiadow + pierwszy i jest oddalony o 2 wezly
 
         Node firstI = graph.getNodeSet().stream()
@@ -152,7 +150,7 @@ public class PropagationTest {
                 iNeighbours.next();
             }
 
-            if (neighboursCount == 4) {
+            if (neighboursCount == neededNeighbourCount) {
                 iNeighbours = i.getNeighborNodeIterator();
                 while (iNeighbours.hasNext()){
                     Node neighbour = iNeighbours.next();
