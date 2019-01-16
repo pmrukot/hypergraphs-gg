@@ -46,7 +46,7 @@ public class P4Test {
         Node nodeFW = p4.getNodeByLabel(graph, Label.FW);
         Node nodeFE = p4.getNodeByLabel(graph, Label.FE);
 
-        Graph graphP4 = p4.run(graph, img, nodeFN, nodeFW, nodeFE);
+        Graph graphP4 = p4.run(graph, img, nodeFN);
 
         assertEquals(13, graphP4.getNodeCount());
         assertEquals(20, graphP4.getEdgeCount());

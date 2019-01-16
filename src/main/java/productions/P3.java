@@ -4,6 +4,7 @@ package productions;
 import common.Geom;
 import common.Label;
 import common.Type;
+
 import org.graphstream.algorithm.AStar;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
