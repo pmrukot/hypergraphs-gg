@@ -59,7 +59,7 @@ public class PropagationTest {
             graph = p3.run(graph, img, node);
         }
 
-        graph.display();
+        graph.display().disableAutoLayout();
 
         /***** Second Step *****/
 
@@ -91,7 +91,7 @@ public class PropagationTest {
             graph = p4.run(graph, img, node);
         }
 
-        graph.display();
+        graph.display().disableAutoLayout();
 
         /***** Third Step *****/
 
@@ -111,7 +111,7 @@ public class PropagationTest {
 
         Assert.assertTrue(nodeI.getAttribute("break"));
 
-        graph.display();
+        graph.display().disableAutoLayout();
     }
 
     private boolean checkLabel(Node n, Label label) {
