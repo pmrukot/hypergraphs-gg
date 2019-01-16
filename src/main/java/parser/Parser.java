@@ -18,6 +18,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -42,18 +43,7 @@ public class Parser {
         );
     }
 
-    private Node getFNeighbour(Graph graph, int x, int y, Label label) {
-        return graph.getNodeSet().stream()
-                .filter(node ->
-                        node.hasAttribute("geom") &&
-                                node.<Geom>getAttribute("geom").getX() == x &&
-                                node.<Geom>getAttribute("geom").getY() == y
-                ).flatMap(this::neighbourStream)
-                .filter(node -> node.<Label>getAttribute("label").equals(label))
-                .findFirst().get();
-    }
-
-    Graph runProduction(int productionNumber, int[] coordinates, int[] rgb, Graph graph, BufferedImage img) throws IOException {
+    Pair<Graph, BufferedImage> runProduction(int productionNumber, int[] coordinates, int[] rgb, Graph graph, BufferedImage img) throws IOException {
         ApplicationContext context = new AnnotationConfigApplicationContext(Parser.class);
 
         int x1;
@@ -67,8 +57,9 @@ public class Parser {
         switch(productionNumber){
             case 1:
                 P1 p1 = context.getBean(P1.class);
-                int width = img.getWidth();
-                int height = img.getHeight();
+                int width = coordinates[0];
+                int height = coordinates[1];
+                img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
                 Geom topLeft = new Geom(0,height-1);
                 Geom topRight = new Geom(width - 1,height -1);
@@ -85,7 +76,7 @@ public class Parser {
                 setColor(img, bottomLeft, bottomLeftRGB);
                 setColor(img, bottomRight, bottomRightRGB);
 
-                return p1.run(img);
+                return new Pair<>(p1.run(img), img);
             case 2:
                 P2 p2 = context.getBean(P2.class);
                 x1 = coordinates[0];
@@ -94,8 +85,17 @@ public class Parser {
                 y2 = coordinates[3];
 
                 pointRGB = new Color(rgb[0], rgb[1], rgb[2]);
-                pointGeom = new Geom((x1+x2)/2, (y1+y2)/2);
+                pointGeom = new Geom((x1+x2+1)/2, (y1+y2+1)/2);
                 setColor(img, pointGeom, pointRGB);
+
+                System.out.println(graph.getNodeSet().stream().map(n -> {
+                    if (n.hasAttribute("geom") && n.hasAttribute("label")) {
+                        Geom geom = n.getAttribute("geom");
+                        return String.format("%s : (%d, %d)", n.getAttribute("label"), geom.getX(), geom.getY());
+                    } else {
+                        return "Unknown";
+                    }
+                }).collect(Collectors.toList()));
 
                 Node nodeI = graph.getNodeSet().stream()
                         .filter(node -> node.hasAttribute("label") &&
@@ -104,7 +104,7 @@ public class Parser {
                                         node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2 &&
                                         node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2
                         ).findFirst().get();
-                return p2.run(graph, img, nodeI);
+                return new Pair<>(p2.run(graph, img, nodeI), img);
             case 3:
                 x1 = coordinates[0];
                 x2 = coordinates[1];
@@ -124,7 +124,7 @@ public class Parser {
                                         node.<Geom>getAttribute("geom").getY() == y1)
                         .findFirst().get();
 
-                return p3.run(testGraph, img, border);
+                return new Pair<>(p3.run(testGraph, img, border), img);
             case 4:
                 P4 p4 = context.getBean(P4.class);
 
@@ -144,23 +144,18 @@ public class Parser {
                                         node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2)
                         .findFirst().get();
 
-                Node nodeFW = getFNeighbour(graph, x1, (y1 + y2) / 2, Label.FW);
-
-                Node nodeFE = getFNeighbour(graph, x2, (y1 + y2) / 2, Label.FE);
-
-                return p4.run(graph, img, nodeFN, nodeFW, nodeFE);
+                return new Pair<>(p4.run(graph, img, nodeFN), img);
             default:
                 System.out.println("Production number is wrong");
         }
         return null;
     }
 
-    public void parseFileAndRunProduction(String pathname) throws IOException{
+    public void parseFileAndRunProduction(String pathname) {
         Scanner scanner;
         ClassLoader classLoader = getClass().getClassLoader();
 
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("colors.jpg")));
+        BufferedImage img = null;
 
         File f = new File(Objects.requireNonNull(classLoader.getResource(pathname)).getFile());
         try {
@@ -175,7 +170,9 @@ public class Parser {
                     rgb = parseNumbersInLine(scanner.nextLine());
                 else
                     rgb = null;
-                graph = runProduction(productionNumber, coordinates, rgb, graph, img);
+                Pair<Graph, BufferedImage> result = runProduction(productionNumber, coordinates, rgb, graph, img);
+                graph = result.getFirst();
+                img = result.getSecond();
             }
             graph.display();
 
