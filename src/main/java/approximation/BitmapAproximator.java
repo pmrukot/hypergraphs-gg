@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -17,14 +18,32 @@ public class BitmapAproximator {
     public int[][] APPROX_G;
     public int[][] APPROX_B;
 
-    public void run(Color rgb1, Color rgb2, Color rgb3, Color rgb4, int x1, int y1, int x2, int y2) {
-        fillTables(rgb1, rgb2, rgb3, rgb4, x1, y1, x2, y2);
-        drawImage(x2, y2);
+    public BitmapAproximator() {
+        initializeTables(1000, 1000);
+    }
+
+    public BitmapAproximator(int maxX, int maxY) {
+        initializeTables(maxX, maxY);
+    }
+
+    public void run(Optional<Color> rgb1, Optional<Color> rgb2, Optional<Color> rgb3, Optional<Color> rgb4, int x1, int y1, int x2, int y2) {
+        if (!rgb1.isPresent()) {
+            rgb1 = Optional.of(new Color(APPROX_R[x1][y2], APPROX_G[x1][y2], APPROX_B[x1][y2]));
+        }
+        if (!rgb2.isPresent()) {
+            rgb2 = Optional.of(new Color(APPROX_R[x2][y2], APPROX_G[x2][y2], APPROX_B[x2][y2]));
+        }
+        if (!rgb3.isPresent()) {
+            rgb3 = Optional.of(new Color(APPROX_R[x1][y1], APPROX_G[x1][y1], APPROX_B[x1][y1]));
+        }
+        if (!rgb4.isPresent()) {
+            rgb4 = Optional.of(new Color(APPROX_R[x2][y1], APPROX_G[x2][y1], APPROX_B[x2][y1]));
+        }
+        fillTables(rgb1.get(), rgb2.get(), rgb3.get(), rgb4.get(), x1, y1, x2, y2);
+        drawImage(x1, y1, x2, y2);
     }
 
     private void fillTables(Color rgb1, Color rgb2, Color rgb3, Color rgb4, int x1, int y1, int x2, int y2) {
-        initializeTables(x2, y2);
-
         for (int px = x1; px <= x2; px++) {
             for (int py = y1; py <= y2; py++) {
                 APPROX_R[px][py] = rgb1.getRed() * get1stMultiplier(x1, y1, x2, y2, px, py)
@@ -43,10 +62,10 @@ public class BitmapAproximator {
         }
     }
 
-    private void drawImage(int x2, int y2) {
+    private void drawImage(int x1, int y1, int x2, int y2) {
         bitmap = new BufferedImage(x2+1, y2+1, BufferedImage.TYPE_INT_RGB);
-        for (int px = 0; px <= x2; px++) {
-            for (int py = 0; py <= y2; py++) {
+        for (int px = x1; px <= x2; px++) {
+            for (int py = y1; py <= y2; py++) {
                 bitmap.setRGB(px, py, getRGBValue(px, py));
             }
         }

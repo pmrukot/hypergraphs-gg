@@ -4,6 +4,7 @@ package productions;
 import common.Geom;
 import common.Label;
 import common.Type;
+
 import org.graphstream.algorithm.AStar;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -23,12 +24,12 @@ public class P3 {
         java.util.List<Node> path;
         Node n0;
         Node n1;
-        Label testLabel = null;
+        Label testLabel;
         if (border == null || !border.hasAttribute("label") || border.getAttribute("label") != Label.B) {
             return graph;
         }
-        int borderGeomx = border.getAttribute("x");
-        int borderGeomy = border.getAttribute("y");
+        int borderGeomX = border.getAttribute("x");
+        int borderGeomY = border.getAttribute("y");
         AStar aStar = new AStar(graph);
         Iterator<Node> neighborNodeIterator = border.getNeighborNodeIterator();
 
@@ -42,15 +43,15 @@ public class P3 {
             return graph;
         }
         Node n3 = path.get(2);
-        int x1 = borderGeomx - ((Geom) n3.getAttribute("geom")).getX();
-        int y1 = borderGeomy - ((Geom) n3.getAttribute("geom")).getY();
-        if (x1 < 0 && y1 == 0)
+        int width = img.getWidth() - 1;
+        int height = img.getHeight() - 1;
+        if (borderGeomX == width)
             testLabel = Label.FE;
-        else if (x1 > 0 && y1 == 0) {
+        else if (borderGeomX == 0 ) {
             testLabel = Label.FW;
-        } else if (x1 == 0 && y1 < 0) {
+        } else if (borderGeomY == 0) {
             testLabel = Label.FS;
-        } else if (x1 == 0 && y1 > 0) {
+        } else if (borderGeomY == height) {
             testLabel = Label.FN;
         } else {
             repair(graph, n0, n1);

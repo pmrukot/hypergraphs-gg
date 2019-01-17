@@ -16,7 +16,9 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
 
@@ -34,23 +36,26 @@ public class Hypergraph {
         //p1
 
         Graph graph = p1.run(img);
-        graph.addAttribute("ui.stylesheet", "graph { padding: 200px; fill-color: #EEE; }");
-        Viewer viewer = graph.display();
-        viewer.disableAutoLayout();
-        sleep(10000);
+//        graph.addAttribute("ui.stylesheet", "graph { padding: 200px; fill-color: #EEE; }");
+//        Viewer viewer = graph.display();
+//        viewer.disableAutoLayout();
+//        sleep(10000);
 //P2
-//        P2 p2 = context.getBean(P2.class);
+        P2 p2 = context.getBean(P2.class);
 //        Graph graphP2 = p2.prepareTestGraph(img);
-//        Node nodeI =  graphP2.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
-//        Graph g2 = p2.run(graphP2, img, nodeI);
+        Node nodeI =  graph.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
+        nodeI.setAttribute("break", true);
+        Graph g2 = p2.run(graph, img, nodeI);
 //        g2.display();
 
         P3 p3 = context.getBean(P3.class);
-        Graph testGraph = p3.prepareTestGraph(img);
-        testGraph.display().disableAutoLayout();
-        Node edge = testGraph.getNode("B1-2");
-        Graph g3 = p3.run(testGraph, img, edge);
-        g3.display().disableAutoLayout();
+//        Graph testGraph = p3.prepareTestGraph(img);
+//        testGraph.display().disableAutoLayout();
+        List<Node> borders =  g2.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.B.toString())).collect(Collectors.toList());
+//        Node edge = graph.getNode("B1-2");
+        for (Node border : borders)
+            graph = p3.run(g2, img, border);
+        graph.display().disableAutoLayout();
 
 
 //        // Preparing P4 test graph
