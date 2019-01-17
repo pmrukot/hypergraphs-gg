@@ -2,20 +2,22 @@ package approximation;
 
 import common.Geom;
 import common.Type;
+import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 public class ApproximationError {
 
     private BufferedImage bitmap;
+    private Graph graph;
 
-    public ApproximationError(BufferedImage bitmap) {
+    public ApproximationError(BufferedImage bitmap, Graph graph) {
         this.bitmap = bitmap;
+        this.graph = graph;
     }
 
     public double compute(Node node) throws ApproximationErrorComputationException {
@@ -23,9 +25,6 @@ public class ApproximationError {
             throw new ApproximationErrorComputationException("Node is not a hyperedge");
         }
         List<Node> neighbourVertices = getNeighbourVertices(node);
-        if (neighbourVertices.size() != 4) {
-            throw new ApproximationErrorComputationException("Node does not have 4 neighbour vertices");
-        }
         sortNeighbourVertices(neighbourVertices);
         Node topLeftVertex = neighbourVertices.get(0);
         Node topRightVertex = neighbourVertices.get(1);
@@ -34,7 +33,7 @@ public class ApproximationError {
         return compute(topLeftVertex, topRightVertex, bottomLeftVertex, bottomRightVertex);
     }
 
-    private List<Node> getNeighbourVertices(Node hyperEdge) {
+    private List<Node> getNeighbourVertices(Node hyperEdge) throws ApproximationErrorComputationException {
         Iterator<Node> iterator = hyperEdge.getNeighborNodeIterator();
         List<Node> neighbours = new ArrayList<>();
         while (iterator.hasNext()) {
@@ -43,7 +42,47 @@ public class ApproximationError {
                 neighbours.add(neighbour);
             }
         }
+        if (neighbours.size() < 3 || neighbours.size() > 4) {
+            String message = "Wrong number of neighbour vertices in hyper-edge:" + neighbours.size();
+            throw new ApproximationErrorComputationException(message);
+        }
+        if (neighbours.size() == 3) {
+            addMissingVertex(neighbours);
+        }
         return neighbours;
+    }
+
+    private void addMissingVertex(List<Node> neighbours) throws ApproximationErrorComputationException {
+        Map<Integer, Integer> xCounter = new HashMap<>();
+        Map<Integer, Integer> yCounter = new HashMap<>();
+        for (Node node : neighbours) {
+            Geom geom = getVertexGeom(node);
+            xCounter.put(geom.getX(), 1 + xCounter.getOrDefault(geom.getX(), 0));
+            yCounter.put(geom.getY(), 1 + yCounter.getOrDefault(geom.getY(), 0));
+        }
+
+        int x = findCoordinateWith1Count(xCounter);
+        int y = findCoordinateWith1Count(yCounter);
+
+        if (x == -1 || y == -1) {
+            throw new ApproximationErrorComputationException("couldn't find coordinate with count=1");
+        }
+
+        Node node = graph.addNode("missing vertex");
+        Geom geom = new Geom(x, y);
+        node.setAttribute("geom", geom);
+        node.setAttribute("xy", x, y);
+        node.setAttribute("rgb", getColor(x, y));
+        neighbours.add(node);
+    }
+
+    private int findCoordinateWith1Count(Map<Integer, Integer> counts) {
+        for (Map.Entry<Integer, Integer> entry : counts.entrySet()) {
+            if (entry.getValue() == 1) {
+                return entry.getKey();
+            }
+        }
+        return -1;
     }
 
     private void sortNeighbourVertices(List<Node> neighbourVertices) {
