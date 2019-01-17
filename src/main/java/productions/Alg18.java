@@ -60,7 +60,6 @@ public class Alg18 {
     }
 
     private Optional<Color> getColorFromGeom(Graph graph, Geom geom) {
-        Color color = new Color(0,0,0);
         if(graph.getNodeSet().stream().filter(n -> n.getAttribute("geom").equals(geom)).count() == 1) {
             return Optional.of(graph.getNodeSet().stream().filter(n -> n.getAttribute("geom").equals(geom)).findAny().get().getAttribute("rgb"));
         } else {
