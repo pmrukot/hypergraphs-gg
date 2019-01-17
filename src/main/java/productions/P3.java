@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 @Service
 public class P3 {
@@ -70,7 +71,7 @@ public class P3 {
         Geom g0 = n0.getAttribute("geom");
         int x = (g0.getX() + g1.getX()) / 2;
         int y = (g0.getY() + g1.getY()) / 2;
-        Node v = addNode(graph, Integer.toString(graph.getNodeCount() + 1), new Geom(x, y),
+        Node v = addNode(graph, Integer.toString(getNewMaxNodeId(graph)), new Geom(x, y),
                 Type.VERTEX, Label.V, getColor(img, x, y));
         addBorderEdge(graph, v.getId(), n0.getId(), (g0.getX() + x) / 2, (g0.getY() + y) / 2);
         addBorderEdge(graph, v.getId(), n1.getId(), (g1.getX() + x) / 2, (g1.getY() + y) / 2);
@@ -171,6 +172,24 @@ public class P3 {
 
     private Color getColor(BufferedImage img, Geom geom) {
         return new Color(img.getRGB(geom.getX(), geom.getY()));
+    }
+
+    private int getNewMaxNodeId(Graph graph) {
+        OptionalInt result = graph.getNodeSet().stream().map(n -> n.getId()).filter(id -> tryParseInt(id)).mapToInt(id -> Integer.valueOf(id)).max();
+        if (result.isPresent()) {
+            return result.getAsInt() + 1;
+        } else {
+            return 0;
+        }
+    }
+
+    boolean tryParseInt(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
 }

@@ -143,7 +143,12 @@ public class P4 {
         Node nodeFE = null;
         Node nodeFW = null;
         Iterator<Edge> edgeIterator = nodeFN.getEachEdge().iterator();
-        Node lowerNode = removeLowerEdgeAndReturnLowerNode(graph, nodeFN);
+        Node lowerNode;
+        try {
+            lowerNode = removeLowerEdgeAndReturnLowerNode(graph, nodeFN);
+        } catch (IndexOutOfBoundsException e) {
+            return graph;
+        }
         Node top = edgeIterator.next().getOpposite(nodeFN);
         AStar aStar = new AStar(graph);
         aStar.compute(top.getId(), lowerNode.getId());
