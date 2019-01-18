@@ -64,7 +64,7 @@ public class PropagationTest {
         /***** Second Step *****/
 
         List<Node> nodesLabeledI = graph.getNodeSet().stream()
-                .filter(n -> checkLabel(n, Label.I) && !isFirstVertexNeighbor(n))
+                .filter(n -> checkLabel(n, Label.I) && !isSpecificNeighbor(n, "1"))
                 .collect(Collectors.toList());
 
         for (Node node : nodesLabeledI) {
@@ -76,7 +76,7 @@ public class PropagationTest {
         }
 
         nodesLabeledB = graph.getNodeSet().stream()
-                .filter(n -> checkLabel(n, Label.B) && !isFirstVertexNeighbor(n))
+                .filter(n -> checkLabel(n, Label.B) && !isSpecificNeighbor(n, "1"))
                 .collect(Collectors.toList());
 
         for (Node node : nodesLabeledB) {
@@ -84,14 +84,27 @@ public class PropagationTest {
         }
 
         List<Node> nodesLabeledF = graph.getNodeSet().stream()
-                .filter(n -> checkLabel(n, Label.FN) || checkLabel(n, Label.FW) || checkLabel(n, Label.FS) || checkLabel(n, Label.FE))
+                .filter(n -> checkLabel(n, Label.FE) || checkLabel(n, Label.FS) || checkLabel(n, Label.FS) || checkLabel(n, Label.FS))
                 .collect(Collectors.toList());
 
         for (Node node : nodesLabeledF) {
             graph = p4.run(graph, img, node);
         }
 
+//        nodeI = graph.getNodeSet().stream()
+//                .filter(n -> checkLabel(n, Label.I) && isSpecificNeighbor(n, "4"))
+//                .findFirst()
+//                .get();
+
+//        graph = p5.run(graph, img, nodeI);
+//        graph = p2.run(graph, img, nodeI);
+
         graph.display().disableAutoLayout();
+        try {
+            Thread.sleep(50000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         /***** Third Step *****/
 
@@ -105,7 +118,7 @@ public class PropagationTest {
         graph = p5.run(graph, img, nodeI);
 
         nodeI = graph.getNodeSet().stream()
-                .filter(n -> checkLabel(n, Label.I) && isFirstVertexNeighbor(n))
+                .filter(n -> checkLabel(n, Label.I) && isSpecificNeighbor(n, "1"))
                 .findFirst()
                 .get();
 
@@ -118,11 +131,11 @@ public class PropagationTest {
         return n.getAttribute("label").equals(label);
     }
 
-    private boolean isFirstVertexNeighbor(Node node) {
+    private boolean isSpecificNeighbor(Node node, String nodeId) {
         Iterator<Node> neighborIterator = node.getNeighborNodeIterator();
         while(neighborIterator.hasNext()) {
             Node neighbor = neighborIterator.next();
-            if(neighbor.getId().equals("1") && neighbor.getAttribute("label").equals(Label.V)) {
+            if(neighbor.getId().equals(nodeId) && neighbor.getAttribute("label").equals(Label.V)) {
                 return true;
             }
         }
@@ -133,7 +146,7 @@ public class PropagationTest {
         // warunek : ma 4 sasiadow + pierwszy i jest oddalony o 2 wezly
 
         Node firstI = graph.getNodeSet().stream()
-                .filter(n -> checkLabel(n, Label.I) && isFirstVertexNeighbor(n))
+                .filter(n -> checkLabel(n, Label.I) && isSpecificNeighbor(n, "1"))
                 .findFirst()
                 .get();
 

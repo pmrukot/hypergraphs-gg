@@ -141,8 +141,12 @@ public class P4 {
     public Graph run(Graph graph, BufferedImage img, Node nodeFN) {
         Node nodeFE = null;
         Node nodeFW = null;
-
-        Node lowerNode = removeLowerEdgeAndReturnLowerNode(graph, nodeFN);
+        Node lowerNode;
+        try {
+            lowerNode = removeLowerEdgeAndReturnLowerNode(graph, nodeFN);
+        } catch (IndexOutOfBoundsException e) {
+            return graph;
+        }
 
         Iterator<Edge> edgeIterator = nodeFN.getEachEdge().iterator();
         Node top = edgeIterator.next().getOpposite(nodeFN);
