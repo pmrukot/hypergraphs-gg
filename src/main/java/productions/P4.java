@@ -172,16 +172,22 @@ public class P4 {
             return graph;
 
         Node temp = nodesOnPath.get(1);
+
         graph.removeEdge(top, temp);
 
         aStar = new AStar(graph);
         aStar.compute(top.getId(), lowerNode.getId());
-        if(aStar.noPathFound())
+        if(aStar.noPathFound()){
+            addEdge(graph, top.getId(), temp.getId());
             return graph;
+        }
+
         path = aStar.getShortestPath();
         nodesOnPath = path.getNodePath();
-        if(nodesOnPath.size() != 5)
+        if(nodesOnPath.size() != 5){
+            addEdge(graph, top.getId(), temp.getId());
             return graph;
+        }
 
         nodeNextToFEorFW = nodesOnPath.get(2);
         nodeIterator = nodeNextToFEorFW.getNeighborNodeIterator();
@@ -197,10 +203,12 @@ public class P4 {
                 break;
             }
         }
-        if(nodeFE == null || nodeFW == null)
-            return graph;
-
         addEdge(graph, top.getId(), temp.getId());
+        if(nodeFE == null || nodeFW == null){
+            return graph;
+        }
+
+
 
         if(verifyNodes(graph, nodeFN, nodeFW, nodeFE)) {
 
