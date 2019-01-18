@@ -113,11 +113,10 @@ public class P4 {
             return false;
         }
 
-        Geom nodeFNgeom = nodeFN.getAttribute("geom");
         Geom nodeFWgeom = nodeFW.getAttribute("geom");
         Geom nodeFEgeom = nodeFE.getAttribute("geom");
 
-        return nodeFNgeom.getY() == nodeFWgeom.getY() && nodeFWgeom.getY() == nodeFEgeom.getY();
+        return nodeFWgeom.getY() == nodeFEgeom.getY();
     }
 
     private Node removeLowerEdgeAndReturnLowerNode(Graph graph, Node node){
@@ -142,13 +141,10 @@ public class P4 {
     public Graph run(Graph graph, BufferedImage img, Node nodeFN) {
         Node nodeFE = null;
         Node nodeFW = null;
+
+        Node lowerNode = removeLowerEdgeAndReturnLowerNode(graph, nodeFN);
+
         Iterator<Edge> edgeIterator = nodeFN.getEachEdge().iterator();
-        Node lowerNode;
-        try {
-            lowerNode = removeLowerEdgeAndReturnLowerNode(graph, nodeFN);
-        } catch (IndexOutOfBoundsException e) {
-            return graph;
-        }
         Node top = edgeIterator.next().getOpposite(nodeFN);
         AStar aStar = new AStar(graph);
         aStar.compute(top.getId(), lowerNode.getId());
@@ -178,7 +174,7 @@ public class P4 {
 
         Node temp = nodesOnPath.get(1);
 
-        graph.removeEdge(top, temp);
+        graph.removeEdge(top.getId(), temp.getId());
 
         aStar = new AStar(graph);
         aStar.compute(top.getId(), lowerNode.getId());
@@ -213,13 +209,11 @@ public class P4 {
             return graph;
         }
 
-
-
         if(verifyNodes(graph, nodeFN, nodeFW, nodeFE)) {
 
             Node upperNode = nodeFN.getNeighborNodeIterator().next();
 
-            String fsId = Integer.toString(Integer.parseInt(nodeFN.getId()) + 1);
+            String fsId = Integer.toString(graph.getNodeCount() + 1);
             Geom fnGeom = nodeFN.getAttribute("geom");
             Geom nodeUnderFnGeom = lowerNode.getAttribute("geom");
             Geom nodeAboveFnGeom = upperNode.getAttribute("geom");

@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 
@@ -31,70 +32,70 @@ public class BitmapApproximatorTest {
 
     @Test
     public void testRedBitmap() throws IOException {
-        Color color = Color.RED;
+        Optional<Color> color = Optional.of(Color.RED);
 
         approximator.run(color, color, color, color, x1, y1, x2, y2);
 
         BufferedImage image = loadImage();
         for (int px = x1; px <= x2; px++) {
             for (int py = y1; py <= y2; py++) {
-                assertEquals(color.getRGB(), image.getRGB(px, py));
+                assertEquals(color.get().getRGB(), image.getRGB(px, py));
             }
         }
     }
 
     @Test
     public void testGreenBitmap() throws IOException {
-        Color color = Color.GREEN;
+        Optional<Color> color = Optional.of(Color.GREEN);
 
         approximator.run(color, color, color, color, x1, y1, x2, y2);
 
         BufferedImage image = loadImage();
         for (int px = x1; px <= x2; px++) {
             for (int py = y1; py <= y2; py++) {
-                assertEquals(color.getRGB(), image.getRGB(px, py));
+                assertEquals(color.get().getRGB(), image.getRGB(px, py));
             }
         }
     }
 
     @Test
     public void testBlueBitmap() throws IOException {
-        Color color = Color.BLUE;
+        Optional<Color> color = Optional.of(Color.BLUE);
 
         approximator.run(color, color, color, color, x1, y1, x2, y2);
 
         BufferedImage image = loadImage();
         for (int px = x1; px <= x2; px++) {
             for (int py = y1; py <= y2; py++) {
-                assertEquals(color.getRGB(), image.getRGB(px, py));
+                assertEquals(color.get().getRGB(), image.getRGB(px, py));
             }
         }
     }
 
     @Test
     public void testWhiteBitmap() throws IOException {
-        Color color = Color.WHITE;
+        Optional<Color> color = Optional.of(Color.WHITE);
 
         approximator.run(color, color, color, color, x1, y1, x2, y2);
 
         BufferedImage image = loadImage();
         for (int px = x1; px <= x2; px++) {
             for (int py = y1; py <= y2; py++) {
-                assertEquals(color.getRGB(), image.getRGB(px, py));
+                assertEquals(color.get().getRGB(), image.getRGB(px, py));
             }
         }
     }
 
     @Test
     public void testBlackBitmap() throws IOException {
-        Color color = Color.BLACK;
+        Optional<Color> color = Optional.of(Color.BLACK);
 
         approximator.run(color, color, color, color, x1, y1, x2, y2);
 
         BufferedImage image = loadImage();
         for (int px = x1; px <= x2; px++) {
             for (int py = y1; py <= y2; py++) {
-                assertEquals(color.getRGB(), image.getRGB(px, py));
+                assertEquals(color.get().getRGB(), image.getRGB(px, py));
             }
         }
     }

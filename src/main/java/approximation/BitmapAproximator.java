@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -25,8 +26,20 @@ public class BitmapAproximator {
         initializeTables(maxX, maxY);
     }
 
-    public void run(Color rgb1, Color rgb2, Color rgb3, Color rgb4, int x1, int y1, int x2, int y2) {
-        fillTables(rgb1, rgb2, rgb3, rgb4, x1, y1, x2, y2);
+    public void run(Optional<Color> rgb1, Optional<Color> rgb2, Optional<Color> rgb3, Optional<Color> rgb4, int x1, int y1, int x2, int y2) {
+        if (!rgb1.isPresent()) {
+            rgb1 = Optional.of(new Color(APPROX_R[x1][y2], APPROX_G[x1][y2], APPROX_B[x1][y2]));
+        }
+        if (!rgb2.isPresent()) {
+            rgb2 = Optional.of(new Color(APPROX_R[x2][y2], APPROX_G[x2][y2], APPROX_B[x2][y2]));
+        }
+        if (!rgb3.isPresent()) {
+            rgb3 = Optional.of(new Color(APPROX_R[x1][y1], APPROX_G[x1][y1], APPROX_B[x1][y1]));
+        }
+        if (!rgb4.isPresent()) {
+            rgb4 = Optional.of(new Color(APPROX_R[x2][y1], APPROX_G[x2][y1], APPROX_B[x2][y1]));
+        }
+        fillTables(rgb1.get(), rgb2.get(), rgb3.get(), rgb4.get(), x1, y1, x2, y2);
         drawImage(x1, y1, x2, y2);
     }
 
