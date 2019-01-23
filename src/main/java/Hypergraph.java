@@ -1,3 +1,4 @@
+import adaptation.AdaptationMarker;
 import com.sun.org.apache.xpath.internal.NodeSet;
 import common.Label;
 import org.graphstream.graph.Edge;
@@ -27,35 +28,41 @@ import static java.lang.Thread.sleep;
 public class Hypergraph {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        ApplicationContext context = new AnnotationConfigApplicationContext(Hypergraph.class);
-        P1 p1 = context.getBean(P1.class);
+//        ApplicationContext context = new AnnotationConfigApplicationContext(Hypergraph.class);
+//        P1 p1 = context.getBean(P1.class);
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("colors.jpg")));
 
         //p1
 
+        P1 p1 = new P1();
         Graph graph = p1.run(img);
 //        graph.addAttribute("ui.stylesheet", "graph { padding: 200px; fill-color: #EEE; }");
 //        Viewer viewer = graph.display();
 //        viewer.disableAutoLayout();
 //        sleep(10000);
-//P2
-        P2 p2 = context.getBean(P2.class);
-//        Graph graphP2 = p2.prepareTestGraph(img);
-        Node nodeI =  graph.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
-        nodeI.setAttribute("break", true);
-        Graph g2 = p2.run(graph, img, nodeI);
-//        g2.display();
 
-        P3 p3 = context.getBean(P3.class);
-//        Graph testGraph = p3.prepareTestGraph(img);
-//        testGraph.display().disableAutoLayout();
-        List<Node> borders =  g2.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.B.toString())).collect(Collectors.toList());
-//        Node edge = graph.getNode("B1-2");
-        for (Node border : borders)
-            graph = p3.run(g2, img, border);
+        AdaptationMarker adaptationMarker = new AdaptationMarker();
+        adaptationMarker.run(graph, img, 0.0d, 1);
         graph.display().disableAutoLayout();
+
+//P2
+//        P2 p2 = context.getBean(P2.class);
+//        Graph graphP2 = p2.prepareTestGraph(img);
+//        Node nodeI =  graph.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.I.toString())).findFirst().get();
+//        nodeI.setAttribute("break", true);
+//        Graph g2 = p2.run(graph, img, nodeI);
+////        g2.display();
+//
+//        P3 p3 = context.getBean(P3.class);
+////        Graph testGraph = p3.prepareTestGraph(img);
+////        testGraph.display().disableAutoLayout();
+//        List<Node> borders =  g2.getNodeSet().stream().filter(node -> node.hasAttribute("label") && node.getAttribute("label").toString().equals(Label.B.toString())).collect(Collectors.toList());
+////        Node edge = graph.getNode("B1-2");
+//        for (Node border : borders)
+//            graph = p3.run(g2, img, border);
+//        graph.display().disableAutoLayout();
 
 
 //        // Preparing P4 test graph
