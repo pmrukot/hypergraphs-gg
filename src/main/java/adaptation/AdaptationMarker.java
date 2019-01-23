@@ -33,9 +33,9 @@ public class AdaptationMarker {
     }
 
     public Graph run(Graph graph, BufferedImage img, double epsilon, int maxStep) {
-        ApproximationError errorChecker = new ApproximationError(img);
         this.graph = graph;
         this.img = img;
+        ApproximationError errorChecker = new ApproximationError(img, graph);
         for (int i = 0; i < maxStep; i++) {
             List<Node> nodeList = graph.getNodeSet().stream()
                     .filter(n -> checkLabel(n, Label.I))
