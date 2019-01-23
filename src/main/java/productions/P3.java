@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 @Service
 public class P3 {
@@ -24,12 +25,12 @@ public class P3 {
         java.util.List<Node> path;
         Node n0;
         Node n1;
-        Label testLabel = null;
+        Label testLabel;
         if (border == null || !border.hasAttribute("label") || border.getAttribute("label") != Label.B) {
             return graph;
         }
-        int borderGeomx = border.getAttribute("x");
-        int borderGeomy = border.getAttribute("y");
+        int borderGeomX = border.getAttribute("x");
+        int borderGeomY = border.getAttribute("y");
         AStar aStar = new AStar(graph);
         Iterator<Node> neighborNodeIterator = border.getNeighborNodeIterator();
 
@@ -43,15 +44,15 @@ public class P3 {
             return graph;
         }
         Node n3 = path.get(2);
-        int x1 = borderGeomx - ((Geom) n3.getAttribute("geom")).getX();
-        int y1 = borderGeomy - ((Geom) n3.getAttribute("geom")).getY();
-        if (x1 < 0 && y1 == 0)
+        int width = img.getWidth() - 1;
+        int height = img.getHeight() - 1;
+        if (borderGeomX == width)
             testLabel = Label.FE;
-        else if (x1 > 0 && y1 == 0) {
+        else if (borderGeomX == 0 ) {
             testLabel = Label.FW;
-        } else if (x1 == 0 && y1 < 0) {
+        } else if (borderGeomY == 0) {
             testLabel = Label.FS;
-        } else if (x1 == 0 && y1 > 0) {
+        } else if (borderGeomY == height) {
             testLabel = Label.FN;
         } else {
             repair(graph, n0, n1);
@@ -70,7 +71,7 @@ public class P3 {
         Geom g0 = n0.getAttribute("geom");
         int x = (g0.getX() + g1.getX()) / 2;
         int y = (g0.getY() + g1.getY()) / 2;
-        Node v = addNode(graph, Integer.toString(graph.getNodeCount() + 1), new Geom(x, y),
+        Node v = addNode(graph, Integer.toString(getNewMaxNodeId(graph)), new Geom(x, y),
                 Type.VERTEX, Label.V, getColor(img, x, y));
         addBorderEdge(graph, v.getId(), n0.getId(), (g0.getX() + x) / 2, (g0.getY() + y) / 2);
         addBorderEdge(graph, v.getId(), n1.getId(), (g1.getX() + x) / 2, (g1.getY() + y) / 2);
@@ -171,6 +172,24 @@ public class P3 {
 
     private Color getColor(BufferedImage img, Geom geom) {
         return new Color(img.getRGB(geom.getX(), geom.getY()));
+    }
+
+    private int getNewMaxNodeId(Graph graph) {
+        OptionalInt result = graph.getNodeSet().stream().map(n -> n.getId()).filter(id -> tryParseInt(id)).mapToInt(id -> Integer.valueOf(id)).max();
+        if (result.isPresent()) {
+            return result.getAsInt() + 1;
+        } else {
+            return 0;
+        }
+    }
+
+    boolean tryParseInt(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
 }
