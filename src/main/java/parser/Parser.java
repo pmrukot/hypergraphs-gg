@@ -88,21 +88,12 @@ public class Parser {
                 pointGeom = new Geom((x1+x2+1)/2, (y1+y2+1)/2);
                 setColor(img, pointGeom, pointRGB);
 
-                System.out.println(graph.getNodeSet().stream().map(n -> {
-                    if (n.hasAttribute("geom") && n.hasAttribute("label")) {
-                        Geom geom = n.getAttribute("geom");
-                        return String.format("%s : (%d, %d)", n.getAttribute("label"), geom.getX(), geom.getY());
-                    } else {
-                        return "Unknown";
-                    }
-                }).collect(Collectors.toList()));
-
                 Node nodeI = graph.getNodeSet().stream()
                         .filter(node -> node.hasAttribute("label") &&
                                         node.<Label>getAttribute("label").equals(Label.I) &&
                                         node.hasAttribute("geom") &&
-                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2 &&
-                                        node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2
+                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2 + 1) / 2 &&
+                                        node.<Geom>getAttribute("geom").getY() == (y1 + y2 + 1) / 2
                         ).findFirst().get();
                 return new Pair<>(p2.run(graph, img, nodeI), img);
             case 3:
@@ -119,9 +110,9 @@ public class Parser {
                 Node border = graph.getNodeSet().stream()
                         .filter(node -> node.hasAttribute("label") &&
                                         node.<Label>getAttribute("label").equals(Label.B) &&
-                                        node.hasAttribute("geom") &&
-                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2 &&
-                                        node.<Geom>getAttribute("geom").getY() == y1)
+                                        node.hasAttribute("x") && node.hasAttribute("y") &&
+                                        node.getAttribute("x", Integer.class) == (x1 + x2 + 1) / 2 &&
+                                        node.getAttribute("y", Integer.class) == y1)
                         .findFirst().get();
 
                 return new Pair<>(p3.run(testGraph, img, border), img);
