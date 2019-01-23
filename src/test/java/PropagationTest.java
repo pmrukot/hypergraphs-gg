@@ -91,14 +91,6 @@ public class PropagationTest {
             graph = p4.run(graph, img, node);
         }
 
-//        nodeI = graph.getNodeSet().stream()
-//                .filter(n -> checkLabel(n, Label.I) && isSpecificNeighbor(n, "4"))
-//                .findFirst()
-//                .get();
-
-//        graph = p5.run(graph, img, nodeI);
-//        graph = p2.run(graph, img, nodeI);
-
         graph.display().disableAutoLayout();
         try {
             Thread.sleep(50000);
