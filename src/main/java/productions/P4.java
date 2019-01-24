@@ -105,7 +105,7 @@ public class P4 {
         Node secondNode = secondEdge.getNode0();
         secondNode = secondNode!=node?secondNode:secondEdge.getNode1();
 
-        if(((Geom)secondNode.getAttribute("geom")).getY()<((Geom)firstNode.getAttribute("geom")).getY() || ((Geom)secondNode.getAttribute("geom")).getX()<((Geom)firstNode.getAttribute("geom")).getX()){
+        if(((Geom)secondNode.getAttribute("geom")).getY()<((Geom)firstNode.getAttribute("geom")).getY()){
             return secondNode;
         }
         else{
@@ -122,7 +122,7 @@ public class P4 {
         Node secondNode = secondEdge.getNode0();
         secondNode = secondNode!=node?secondNode:secondEdge.getNode1();
 
-        if(((Geom)secondNode.getAttribute("geom")).getY()<((Geom)firstNode.getAttribute("geom")).getY() || ((Geom)secondNode.getAttribute("geom")).getX()<((Geom)firstNode.getAttribute("geom")).getX()){
+        if(((Geom)secondNode.getAttribute("geom")).getY()<((Geom)firstNode.getAttribute("geom")).getY()){
             graph.removeEdge(secondEdge);
             return secondNode;
         }
@@ -178,9 +178,8 @@ public class P4 {
         Iterator<Node> nodeIterator = nodeNextToFEorFW1.getNeighborNodeIterator();
         while(nodeIterator.hasNext()){
             Node node = nodeIterator.next();
-            if(!nodesOnPath.contains(node) && ((HasSmallerXThan(node, nodeNextToFEorFW1) && HasSmallerXThan(nodeFN, node)) || ((HasSmallerYThan(node, nodeNextToFEorFW1) && HasSmallerYThan(nodeFN, node)) || (HasSmallerXThan(nodeNextToFEorFW1, node) && HasSmallerXThan(node, nodeFN)) || (HasSmallerYThan(nodeNextToFEorFW1, node) && HasSmallerYThan(node, nodeFN)))))
-            {
-                if(HasSmallerXThan(node, nodeFN) || HasSmallerYThan(node, nodeFN)){
+            if(!nodesOnPath.contains(node) && ((HasSmallerXThan(node, nodeNextToFEorFW1) && HasSmallerXThan(nodeFN, node)) || (HasSmallerXThan(nodeNextToFEorFW1, node) && HasSmallerXThan(node, nodeFN)))){
+                if(HasSmallerXThan(node, nodeFN)){
                     nodeFW = node;
                 }
                 else {
@@ -222,9 +221,8 @@ public class P4 {
         nodeIterator = nodeNextToFEorFW2.getNeighborNodeIterator();
         while(nodeIterator.hasNext()){
             Node node = nodeIterator.next();
-            if(!nodesOnPath.contains(node) && ((HasSmallerXThan(node, nodeNextToFEorFW1) && HasSmallerXThan(nodeFN, node)) || ((HasSmallerYThan(node, nodeNextToFEorFW1) && HasSmallerYThan(nodeFN, node)) || (HasSmallerXThan(nodeNextToFEorFW1, node) && HasSmallerXThan(node, nodeFN)) || (HasSmallerYThan(nodeNextToFEorFW1, node) && HasSmallerYThan(node, nodeFN)))))
-            {
-                if(HasSmallerXThan(node, nodeFN) || HasSmallerYThan(node, nodeFN)){
+            if(!nodesOnPath.contains(node) && ((HasSmallerXThan(node, nodeNextToFEorFW2) && HasSmallerXThan(nodeFN, node)) || (HasSmallerXThan(nodeNextToFEorFW2, node) && HasSmallerXThan(node, nodeFN)))){
+                if(HasSmallerXThan(node, nodeFN)){
                     nodeFW = node;
                 }
                 else {
@@ -318,10 +316,6 @@ public class P4 {
 
     public boolean HasSmallerXThan(Node a, Node b){
         return ((Geom)a.getAttribute("geom")).getX() < ((Geom)b.getAttribute("geom")).getX();
-    }
-
-    public boolean HasSmallerYThan(Node a, Node b){
-        return ((Geom)a.getAttribute("geom")).getY() < ((Geom)b.getAttribute("geom")).getY();
     }
 
     public Node getNodeByLabel(Graph graph, Label label){
