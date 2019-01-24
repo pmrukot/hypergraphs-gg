@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.OptionalInt;
 
 @Service
 public class P4 {
@@ -257,7 +258,7 @@ public class P4 {
 
             graph.removeNode(nodeFN);
 
-            String oldId = Integer.toString(graph.getNodeCount() + 1);
+            String oldId = String.valueOf(getNewMaxNodeId(graph));
             if(nodeFN.getAttribute("label") == Label.FN){
                 addNode(graph, oldId, Type.HYPEREDGE, Label.FN, new Geom(oldGeom.getX(), nodeAboveFnGeom.getY()- (nodeAboveFnGeom.getY()-nodeUnderFnGeom.getY())/8));
             }
@@ -267,7 +268,7 @@ public class P4 {
 
             oldNeighbors.forEach(node -> addEdge(graph, node.getId(), oldId));
 
-            String newId = Integer.toString(graph.getNodeCount() + 1);
+            String newId = String.valueOf(getNewMaxNodeId(graph));
             if(nodeFN.getAttribute("label") == Label.FN){
                 addNode(graph, newId, Type.HYPEREDGE, Label.FS, new Geom(oldGeom.getX(), nodeUnderFnGeom.getY() + (nodeAboveFnGeom.getY()-nodeUnderFnGeom.getY())/8));
                 addEdge(graph, newId, lowerNode.getId());
@@ -281,7 +282,7 @@ public class P4 {
 
             Geom middle = new Geom(nodeAboveFnGeom.getX(), nodeUnderFnGeom.getY()+(nodeAboveFnGeom.getY()-nodeUnderFnGeom.getY())/2);
             Color color = getColor(img, middle);
-            Node vNode = addNode(graph, "V", Type.HYPEREDGE, Label.V, middle, color);
+            Node vNode = addNode(graph, String.valueOf(getNewMaxNodeId(graph)), Type.HYPEREDGE, Label.V, middle, color);
 
             vNode.addAttribute("ui.label", "V: " + color.getRed() + " " + color.getGreen() + " " + color.getBlue());
 
@@ -360,5 +361,23 @@ public class P4 {
 
     private void removeEdge(Graph graph, String sourceName, String targetName) {
         graph.removeEdge(sourceName, targetName);
+    }
+
+    private int getNewMaxNodeId(Graph graph) {
+        OptionalInt result = graph.getNodeSet().stream().map(n -> n.getId()).filter(id -> tryParseInt(id)).mapToInt(id -> Integer.valueOf(id)).max();
+        if (result.isPresent()) {
+            return result.getAsInt() + 1;
+        } else {
+            return 0;
+        }
+    }
+
+    boolean tryParseInt(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }

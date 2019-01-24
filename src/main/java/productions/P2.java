@@ -55,7 +55,7 @@ public class P2 {
 
         if (verifyNodes(graph, nodeI)) {
 
-            Node v = replaceI(graph, nodeI);
+            Node v = replaceI(graph, nodeI, img);
 
 
             ArrayList<Node> nodes = new ArrayList<Node>();
@@ -66,10 +66,10 @@ public class P2 {
             int x = ((Geom) v.getAttribute("geom")).getX();
             int y = ((Geom) v.getAttribute("geom")).getY();
 
-            Node fn = createHyperEdge(graph, Label.FN, x, y +distanceFromVToF1);
-            Node fe = createHyperEdge(graph, Label.FE, x + distanceFromVToF1, y);
-            Node fw = createHyperEdge(graph, Label.FW, x - distanceFromVToF1, y);
-            Node fs = createHyperEdge(graph, Label.FS, x, y - distanceFromVToF1);
+            Node fn = createHyperEdge(graph, Label.FN, x, y +distanceFromVToF1, img);
+            Node fe = createHyperEdge(graph, Label.FE, x + distanceFromVToF1, y, img);
+            Node fw = createHyperEdge(graph, Label.FW, x - distanceFromVToF1, y, img);
+            Node fs = createHyperEdge(graph, Label.FS, x, y - distanceFromVToF1, img);
             addEdge(graph, v, fn);
             addEdge(graph, v, fe);
             addEdge(graph, v, fw);
@@ -80,7 +80,7 @@ public class P2 {
         return graph;
     }
 
-    private Node replaceI(Graph graph, Node nodeI) {
+    private Node replaceI(Graph graph, Node nodeI, BufferedImage img) {
         int x = 0;
         int y = 0;
         for (Iterator<Node> it = nodeI.getNeighborNodeIterator(); it.hasNext(); ) {
@@ -102,19 +102,19 @@ public class P2 {
 
 
 
-        Node newI1 = createHyperEdge(graph, Label.I, vx - distanceFromVToF1, vy+distanceFromVToF1);
+        Node newI1 = createHyperEdge(graph, Label.I, vx - distanceFromVToF1, vy+distanceFromVToF1, img);
         addEdge(graph, v, newI1);
         addEdge(graph, newI1, getTopLeftNode(nodes));
 
-        Node newI2 = createHyperEdge(graph, Label.I, vx + distanceFromVToF1, vy+distanceFromVToF1);
+        Node newI2 = createHyperEdge(graph, Label.I, vx + distanceFromVToF1, vy+distanceFromVToF1, img);
         addEdge(graph, v, newI2);
         addEdge(graph, newI2, getTopRightNode(nodes));
 
-        Node newI3 = createHyperEdge(graph, Label.I, vx - distanceFromVToF1, vy-distanceFromVToF1);
+        Node newI3 = createHyperEdge(graph, Label.I, vx - distanceFromVToF1, vy-distanceFromVToF1, img);
         addEdge(graph, v, newI3);
         addEdge(graph, newI3, getBottomLeftNode(nodes));
 
-        Node newI4 = createHyperEdge(graph, Label.I, vx + distanceFromVToF1, vy-distanceFromVToF1);
+        Node newI4 = createHyperEdge(graph, Label.I, vx + distanceFromVToF1, vy-distanceFromVToF1, img);
         addEdge(graph, v, newI4);
         addEdge(graph, newI4, getBottomRightNode(nodes));
 
@@ -126,19 +126,19 @@ public class P2 {
                 Type.VERTEX, V, false, nodeI.getAttribute("rgb"), x, y);
     }
 
-    private Node createHyperEdge(Graph graph, Label label) {
-        return addNode(graph, Integer.toString(getNewMaxNodeId(graph)),
-                Type.HYPEREDGE, label, false);
-    }
+//    private Node createHyperEdge(Graph graph, Label label, int i, int i1, BufferedImage img) {
+//        return addNode(graph, Integer.toString(getNewMaxNodeId(graph)),
+//                Type.HYPEREDGE, label, false);
+//    }
 
-    private Node createHyperEdge(Graph graph, Label label, int x, int y) {
+    private Node createHyperEdge(Graph graph, Label label, int x, int y, BufferedImage img) {
         return addNode(graph, Integer.toString(getNewMaxNodeId(graph)), new Geom(x, y),
-                Type.HYPEREDGE, label, false, null, x, y);
+                Type.HYPEREDGE, label, false, getColor(img, x, y), x, y);
     }
 
 
-    private Color getColor(BufferedImage img, Geom geom) {
-        return new Color(img.getRGB(geom.getX(), geom.getY()));
+    private Color getColor(BufferedImage img, int x, int y) {
+        return new Color(img.getRGB(x, y));
     }
 
     private Node addNode(Graph graph, String name, Type type, Label label, boolean isBreak) {

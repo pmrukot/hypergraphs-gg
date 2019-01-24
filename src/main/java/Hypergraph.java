@@ -32,7 +32,7 @@ public class Hypergraph {
 //        P1 p1 = context.getBean(P1.class);
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("colors.jpg")));
+        BufferedImage img = ImageIO.read(Objects.requireNonNull(cl.getResourceAsStream("bitmapa.jpg")));
 
         //p1
 
@@ -44,7 +44,7 @@ public class Hypergraph {
 //        sleep(10000);
 
         AdaptationMarker adaptationMarker = new AdaptationMarker();
-        adaptationMarker.run(graph, img, 0.0d, 1);
+        adaptationMarker.run(graph, img, 0.0d, 2);
         graph.display().disableAutoLayout();
 
 //P2
