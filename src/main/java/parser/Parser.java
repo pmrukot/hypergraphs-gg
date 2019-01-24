@@ -101,8 +101,8 @@ public class Parser {
                         .filter(node -> node.hasAttribute("label") &&
                                         node.<Label>getAttribute("label").equals(Label.I) &&
                                         node.hasAttribute("geom") &&
-                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2 + 1) / 2 &&
-                                        node.<Geom>getAttribute("geom").getY() == (y1 + y2 + 1) / 2
+                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2 &&
+                                        node.<Geom>getAttribute("geom").getY() == (y1 + y2) / 2
                         ).findFirst().get();
                 return new Pair<>(p2.run(graph, img, nodeI), img);
             case 3:
@@ -120,7 +120,7 @@ public class Parser {
                         .filter(node -> node.hasAttribute("label") &&
                                         node.<Label>getAttribute("label").equals(Label.B) &&
                                         node.hasAttribute("geom") &&
-                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2 + 1) / 2 &&
+                                        node.<Geom>getAttribute("geom").getX() == (x1 + x2) / 2 &&
                                         node.<Geom>getAttribute("geom").getY() == y1)
                         .findFirst().get();
 
