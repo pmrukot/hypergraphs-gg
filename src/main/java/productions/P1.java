@@ -27,7 +27,7 @@ public class P1 {
         addNode(graph, "2", topRight, Type.VERTEX, Label.V, false, getColor(img, topRight));
         addNode(graph, "3", bottomLeft, Type.VERTEX, Label.V, false, getColor(img, bottomLeft));
         addNode(graph, "4", bottomRight, Type.VERTEX, Label.V, false,getColor(img, bottomRight));
-        addNode(graph, "5", center, Type.HYPEREDGE, Label.I, false, null);
+        addNode(graph, "5", center, Type.HYPEREDGE, Label.I, false, getColor(img, center));
 
         addBorderEdge(graph, "1", "2", width/2, height-1);
         addBorderEdge(graph, "2", "4", width-1, height/2);
